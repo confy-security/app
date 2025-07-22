@@ -1,0 +1,20 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Henrique Sebastião",email = "contato@henriquesebastiao.com"},
+    {name = "Valério Gonçalves",email = "valeriogoncalvesdev@gmail.com"},
+    {name = "Lucas Sousa",email = "lucasofc-15@outlook.com"},
+    {name = "Wanderson Amorim",email = "wandersonfla100@hotmail.com"},
+    {name = "Emanuel Chagas",email = "pinheiroemanuel192@gmail.com"},
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
