@@ -1,7 +1,7 @@
 [project]
 name = "app"
 version = "0.1.0"
-description = ""
+description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
     {name = "Henrique Sebastião",email = "contato@henriquesebastiao.com"},
     {name = "Valério Gonçalves",email = "valeriogoncalvesdev@gmail.com"},
