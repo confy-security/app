@@ -50,7 +50,7 @@ radon = 'radon cc ./app -a -na'
 bandit = 'bandit -r ./app'
 run = 'poetry run python app/main.py'
 test = 'poetry run pytest -s -x --cov=app -vv; poetry run coverage html'
-build = 'poetry run pyinstaller app/main.py --onefile --clean --name confy --add-data="resources/icons/shield.svg:resources/icons" --windowed --icon resources/icon/icon.ico'
+build = 'poetry run pyinstaller app/main.py --onefile --clean --name confy --add-data="resources/icons/shield.svg:resources/icons" --windowed --icon resources/icons/icon.ico'
 
 [tool.pytest.ini_options]
 pythonpath = "."
