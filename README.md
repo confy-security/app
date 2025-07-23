@@ -52,6 +52,7 @@ Agora você pode começar a desenvolver o aplicativo Confy :)
 
 - `task run` - executa a aplicação.
 - `task test` - executa os testes.
+- `task build` - faz o build do binário executável.
 
 > [!NOTE]
 > Lembre-se que você deve estar com o ambiente virtual ativado antes de executar os comandos.
