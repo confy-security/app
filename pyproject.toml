@@ -27,6 +27,7 @@ radon = "^6.0.1"
 bandit = "^1.8.6"
 pytest-qt = "^4.5.0"
 pytest-cov = "^6.2.1"
+pyinstaller = "^6.14.2"
 
 [tool.ruff]
 line-length = 79
@@ -49,6 +50,7 @@ radon = 'radon cc ./app -a -na'
 bandit = 'bandit -r ./app'
 run = 'poetry run python app/main.py'
 test = 'poetry run pytest -s -x --cov=app -vv; poetry run coverage html'
+build = 'poetry run pyinstaller app/main.py --onefile --clean --name confy --add-data="resources/icons/shield.svg:resources/icons" --windowed --icon resources/icon/icon.ico'
 
 [tool.pytest.ini_options]
 pythonpath = "."
