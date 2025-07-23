@@ -59,4 +59,4 @@ qt_api = 'pyside6'
 
 [tool.coverage.run]
 branch = true
-omit = ["main.py"]
+omit = ["main.py", "utils.py"]
