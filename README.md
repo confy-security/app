@@ -2,7 +2,7 @@
 
 Cliente desktop para o sistema Confy de comunicação criptografada.
 
-### 🔧 Configurando o ambiente de desenvolvimento
+## 🔧 Configurando o ambiente de desenvolvimento
 
 Antes de iniciar você deve ter as seguintes ferramentas instaladas:
 
@@ -47,3 +47,11 @@ Ou no Linux:
 ```
 
 Agora você pode começar a desenvolver o aplicativo Confy :)
+
+## ✨ Comandos úteis
+
+- `task run` - executa a aplicação.
+- `task test` - executa os testes.
+
+> [!NOTE]
+> Lembre-se que você deve estar com o ambiente virtual ativado antes de executar os comandos.
