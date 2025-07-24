@@ -1,0 +1,35 @@
+on: [push, pull_request]
+
+name: Code Quality
+
+jobs:
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy files from repo
+        uses: actions/checkout@v4
+      
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+      
+      - name: Install dependencies
+        run: poetry install
+      
+      - name: Run Ruff
+        run: poetry run ruff check .; poetry run ruff check . --diff
+    
+      - name: Run Radon
+        run: poetry run radon cc ./app -a -na
+    
+      - name: Run Bandit
+        run: poetry run bandit -r ./app
