@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 
-from app.ui.connect_to_server import ConnectToServerWindow
+from confy.ui.connect_to_server import ConnectToServerWindow
 
 
 def test_campos_vazios(qtbot):

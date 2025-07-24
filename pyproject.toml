@@ -1,5 +1,5 @@
 [project]
-name = "app"
+name = "confy"
 version = "0.1.0"
 description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
@@ -10,9 +10,11 @@ authors = [
     {name = "Emanuel Chagas",email = "pinheiroemanuel192@gmail.com"},
 ]
 readme = "README.md"
-requires-python = ">=3.13,<3.14"
+license = { file = "LICENSE" }
+requires-python = "==3.13.5"
 dependencies = [
-    "pyside6 (>=6.9.1,<7.0.0)"
+    "pyside6 (>=6.9.1,<7.0.0)",
+    "briefcase (>=0.3.24,<0.4.0)"
 ]
 
 
@@ -46,11 +48,12 @@ quote-style = 'single'
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
 format = 'ruff format .; ruff check . --fix'
-radon = 'radon cc ./app -a -na'
-bandit = 'bandit -r ./app'
-run = 'poetry run python app/main.py'
-test = 'poetry run pytest -s -x --cov=app -vv; poetry run coverage html'
-build = 'poetry run pyinstaller app/main.py --onefile --clean --name confy --add-data="resources/icons/shield.svg:resources/icons" --windowed --icon resources/icons/icon.ico'
+radon = 'radon cc ./confy -a -na'
+bandit = 'bandit -r ./confy'
+run = 'poetry run python confy/__main__.py'
+test = 'poetry run pytest -s -x --cov=confy -vv; poetry run coverage html'
+build = 'poetry run briefcase build'
+package = 'poetry run briefcase package'
 
 [tool.pytest.ini_options]
 pythonpath = "."
@@ -59,4 +62,19 @@ qt_api = 'pyside6'
 
 [tool.coverage.run]
 branch = true
-omit = ["main.py", "utils.py"]
+omit = ["__main__.py", "utils.py"]
+
+[tool.briefcase]
+project_name = "Confy"
+version = "0.1.0"
+bundle = "com.henriquesebastiao.confy"
+license.file = "LICENSE"
+
+[tool.briefcase.app.confy]
+sources = ["confy"]
+test_sources = ["tests"]
+description = "Aplicativo Confy Desktop."
+long_description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
+icon = "confy/assets/icon"
+installer_icon = "confy/assets/icon"
+formal_name = "Confy"

@@ -1,3 +1,5 @@
+import importlib.resources
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
@@ -10,7 +12,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from app.utils import Colors, resource_path
+from confy.utils import Colors
 
 
 class ConnectToServerWindow(QWidget):
@@ -30,9 +32,10 @@ class ConnectToServerWindow(QWidget):
         self.logo.setAlignment(Qt.AlignCenter)
 
         # Renderiza o SVG em um QPixmap
-        svg_renderer = QSvgRenderer(
-            resource_path('resources/icons/shield.svg')
-        )
+        with importlib.resources.path(
+            'confy.assets', 'shield.svg'
+        ) as img_path:
+            svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
         pixmap.fill(Qt.transparent)
 
