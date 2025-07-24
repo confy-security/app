@@ -13,7 +13,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = "==3.13.5"
 dependencies = [
-    "pyside6 (>=6.9.1,<7.0.0)",
+    "pyside6-essentials (>=6.9.1,<7.0.0)"
 ]
 
 
@@ -83,7 +83,7 @@ installer_icon = "confy/assets/icon"
 formal_name = "Confy"
 
 requires = [
-    "pyside6 (>=6.9.1,<7.0.0)",
+    "pyside6-essentials (>=6.9.1,<7.0.0)",
 ]
 
 test_requires = [
