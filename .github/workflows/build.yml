@@ -20,6 +20,11 @@ jobs:
   build-and-package:
     name: Package
     runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: write
+      packages: write
+      actions: write
+      discussions: write
     strategy:
       fail-fast: false
       matrix:
