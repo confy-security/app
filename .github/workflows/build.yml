@@ -97,11 +97,6 @@ jobs:
             output-format: "app"
             runs-on: "windows-latest"
 
-          - target: "MacOs"
-            platform: "macos"
-            output-format: "app"
-            runs-on: "macos-latest"
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
