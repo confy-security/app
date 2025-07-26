@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ "Flatpak", "AppImage", "Archlinux", "Ubuntu", "Fedora", "Opensuse", "Windows", "MacOs" ]
+        target: [ "Flatpak", "AppImage", "Archlinux", "Ubuntu", "Fedora", "Opensuse", "Windows" ]
         include:
           - target: "AppImage"
             platform: "linux"
