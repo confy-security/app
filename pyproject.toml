@@ -54,6 +54,7 @@ run = 'poetry run python confy/__main__.py'
 test = 'poetry run pytest -s -x --cov=confy -vv; poetry run coverage html'
 build = 'poetry run briefcase build'
 package = 'poetry run briefcase package'
+changelog = 'github_changelog_generator -u confy-security -p app --no-verbose'
 
 [tool.pytest.ini_options]
 pythonpath = "."
