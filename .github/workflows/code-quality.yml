@@ -1,6 +1,6 @@
 on: [push, pull_request]
 
-name: Code Quality
+name: Test
 
 jobs:
   code-quality:
@@ -33,3 +33,38 @@ jobs:
     
       - name: Run Bandit
         run: poetry run bandit -r ./app
+
+  tests:
+    name: Tests
+    needs: code-quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy files from repo
+        uses: actions/checkout@v4
+    
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+    
+      - name: Install dependencies
+        run: poetry install
+    
+      - name: Install Ubuntu dependencies
+        run: sudo apt-get install -y libegl1
+    
+      - name: Run Tests
+        run: poetry run pytest -s -x --cov=confy -vv; poetry run coverage html
+    
+      - name: Store coverage files
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
