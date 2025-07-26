@@ -1,6 +1,6 @@
 [project]
-name = "app"
-version = "0.1.0"
+name = "confy"
+version = "0.1.0.dev1"
 description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
     {name = "Henrique Sebastião",email = "contato@henriquesebastiao.com"},
@@ -10,8 +10,10 @@ authors = [
     {name = "Emanuel Chagas",email = "pinheiroemanuel192@gmail.com"},
 ]
 readme = "README.md"
-requires-python = ">=3.13,<4.0"
+license = { file = "LICENSE" }
+requires-python = "==3.13.5"
 dependencies = [
+    "pyside6-essentials (>=6.9.1,<7.0.0)"
 ]
 
 
@@ -24,6 +26,10 @@ ruff = "^0.12.4"
 taskipy = "^1.14.1"
 radon = "^6.0.1"
 bandit = "^1.8.6"
+pytest = "^8.4.1"
+pytest-qt = "^4.5.0"
+pytest-cov = "^6.2.1"
+briefcase = "^0.3.24"
 
 [tool.ruff]
 line-length = 79
@@ -36,8 +42,117 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT']
 preview = true
 quote-style = 'single'
 
+[tool.ruff.lint.per-file-ignores]
+'connect_to_server.py' = ['W293']
+
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
 format = 'ruff format .; ruff check . --fix'
-radon = 'radon cc ./app -a -na'
-bandit = 'bandit -r ./app'
+radon = 'radon cc ./confy -a -na'
+bandit = 'bandit -r ./confy'
+run = 'poetry run python confy/__main__.py'
+test = 'poetry run pytest -s -x --cov=confy -vv; poetry run coverage html'
+build = 'poetry run briefcase build'
+package = 'poetry run briefcase package'
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = '-p no:warnings'
+qt_api = 'pyside6'
+
+[tool.coverage.run]
+branch = true
+omit = ["__main__.py", "utils.py"]
+
+[tool.briefcase]
+project_name = "Confy"
+version = "0.1.0.dev1"
+author = "Confy Security"
+author_email = "confy@henriquesebastiao.com"
+url = "https://github.com/confy-security/app"
+bundle = "com.henriquesebastiao.confy"
+license.file = "LICENSE"
+
+[tool.briefcase.app.confy]
+sources = ["confy"]
+test_sources = ["tests"]
+description = "Aplicativo Confy Desktop."
+long_description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
+icon = "confy/assets/icon"
+installer_icon = "confy/assets/icon"
+formal_name = "Confy"
+
+requires = [
+    "pyside6-essentials (>=6.9.1,<7.0.0)",
+]
+
+test_requires = [
+    "pytest",
+    "pytest-qt",
+]
+
+[tool.briefcase.app.confy.macOS]
+universal_build = true
+requires = [
+]
+
+[tool.briefcase.app.confy.linux]
+requires = [
+]
+
+[tool.briefcase.app.confy.linux.system.debian]
+system_requires = [
+]
+
+system_runtime_requires = [
+]
+
+[tool.briefcase.app.confy.linux.system.rhel]
+system_requires = [
+]
+
+system_runtime_requires = [
+]
+
+[tool.briefcase.app.confy.linux.system.suse]
+system_requires = [
+]
+
+system_runtime_requires = [
+]
+
+[tool.briefcase.app.confy.linux.system.arch]
+system_requires = [
+]
+
+system_runtime_requires = [
+]
+
+[tool.briefcase.app.confy.linux.appimage]
+manylinux = "manylinux_2_28"
+
+system_requires = [
+]
+
+linuxdeploy_plugins = [
+]
+
+[tool.briefcase.app.confy.linux.flatpak]
+flatpak_runtime = "org.freedesktop.Platform"
+flatpak_runtime_version = "24.08"
+flatpak_sdk = "org.freedesktop.Sdk"
+
+[tool.briefcase.app.confy.windows]
+requires = [
+]
+
+# Mobile deployments
+[tool.briefcase.app.confy.iOS]
+supported = false
+
+[tool.briefcase.app.confy.android]
+supported = false
+
+# Web deployments
+[tool.briefcase.app.confy.web]
+supported = false
