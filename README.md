@@ -27,7 +27,7 @@ Antes de iniciar você deve ter as seguintes ferramentas instaladas:
 - [Python 3.13.5](https://www.python.org/downloads/)
 
 > [!IMPORTANT]
-> Devido as dependências da aplicação, recomendamos que use especificamente a versão 3.13.5 (mais recente) do Python durante o desenvolvimento.
+> Devido as dependências da aplicação, recomendamos que use especificamente a versão 3.13.5 do Python durante o desenvolvimento.
 
 #### Clone o repositório
 
