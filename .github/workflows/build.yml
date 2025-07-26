@@ -1,9 +1,9 @@
 name: Build and Package
 
 on:
-  workflow_run:
-    workflows: ["Code Quality"]
-    types: [completed]
+  push:
+    tags:
+      - '*'
 
 concurrency:
   group: ${{ github.workflow}}-${{ github.ref }}
@@ -117,10 +117,10 @@ jobs:
           name: Log-Failure-${{ matrix.target }}
           path: logs/*
 
-    #   - name: Release
-    #     uses: softprops/action-gh-release@v2
-    #     if: startsWith(github.ref, 'refs/tags/')
-    #     with:
-    #       body_path: CHANGELOG
-    #       files: |
-    #         dist/*
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: CHANGELOG
+          files: |
+            dist/*
