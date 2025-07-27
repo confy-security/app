@@ -12,8 +12,8 @@
 
 <div align="center">
 
-[![GitHub License](https://img.shields.io/github/license/confy-security/app?color=blue
-)](/LICENSE)
+[![Code Quality](https://github.com/confy-security/app/actions/workflows/code-quality.yml/badge.svg)](https://github.com/confy-security/app/actions/workflows/code-quality.yml)
+[![GitHub License](https://img.shields.io/github/license/confy-security/app?color=blue)](/LICENSE)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=confy-security%2Fapp&label=repository%20visits&countColor=%231182c3&style=flat)](https://github.com/confy-security/app)
   
 </div>
