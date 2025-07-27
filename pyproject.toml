@@ -47,7 +47,7 @@ quote-style = 'single'
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
-format = 'ruff format .; ruff check . --fix'
+format = 'poetry run ruff format .'
 radon = 'radon cc ./confy -a -na'
 bandit = 'bandit -r ./confy'
 run = 'poetry run python confy/__main__.py'
