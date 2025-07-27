@@ -119,7 +119,7 @@ A comunicação entre os usuários será criptografada por
 meio de criptografia simétrica, que é mais rápida e eficiente,
 porém para que cada usuário tenha a chave de descriptografia
 do outro, essa chave deve ser enviada de modo seguro, para
-isso antes de tudo os irão trocar chaves de públicas de
+isso antes de tudo os usuários irão trocar chaves públicas de
 criptografia assimétrica, para que depois possam enviar
 a chave simétrica com segurança.
 
@@ -184,7 +184,7 @@ O fluxo de envio e recebimento de mensagens é o seguinte:
    usando a chave simétrica compartilhada.
 2. O usuário A envia a mensagem criptografada para o
    servidor.
-3. O servidor recebe a mensagem e a retransmite para o
+3. O servidor recebe a mensagem e a encaminha para o
    usuário B.
 4. O usuário B recebe a mensagem criptografada e a
    descriptografa usando a chave simétrica compartilhada.
@@ -199,7 +199,7 @@ sequenceDiagram
     Note over Cliente A, Cliente B: Ambos já compartilharam a chave simétrica
     Cliente A->>Cliente B: Envia mensagem criptografada
     Cliente A->>Servidor: Envia mensagem criptografada
-    Servidor-->>Cliente B: Retransmite mensagem criptografada
+    Servidor-->>Cliente B: Encaminha mensagem criptografada
     Cliente B->>Cliente B: Descriptografa mensagem usando chave simétrica
     Cliente B->>Cliente B: Exibe mensagem descriptografada
 ```
@@ -215,7 +215,7 @@ seguinte:
 1. O usuário A envia uma mensagem de encerramento para o
    servidor.
 2. O servidor recebe a mensagem de encerramento e a
-   retransmite para o usuário B.
+   encaminha para o usuário B.
 3. O usuário B recebe a mensagem de encerramento e
    finaliza a conexão.
 4. O usuário A também finaliza a conexão com o servidor.
@@ -247,7 +247,7 @@ entre os usuários, vamos descrever como o servidor
 processa essas requisições e gerencia as conexões.
 
 O servidor da aplicação é responsável por intermediar a
-comunicação entre os usuários conectados, retransmitindo
+comunicação entre os usuários conectados, encaminhando
 mensagens, controlando o estado das conexões ativas e
 monitorando o ciclo de vida de cada sessão WebSocket.
 Para isso, ele mantém duas estruturas principais:
