@@ -1,7 +1,7 @@
 B_CONNECT = 'Conectar'
 B_TO_TALK = 'Conversar'
 
-I_PLACEHOLDER_RECIPIENT_ADDRESS = 'Endereço do Destinatário'
+I_PLACEHOLDER_RECIPIENT_ADDRESS = 'Username do Destinatário'
 I_PLACEHOLDER_SERVER_ADDRESS = 'Endereço do Servidor'
 I_PLACEHOLDER_USERNAME = 'Username'
 

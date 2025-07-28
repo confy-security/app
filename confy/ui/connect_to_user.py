@@ -51,12 +51,12 @@ class ConnectToUserWindow(QWidget):
 
         layout.addWidget(self.logo, alignment=Qt.AlignCenter)
 
-        # Campo de Endereço do Destinatário
-        self.recipient_address_input = QLineEdit()
-        self.recipient_address_input.setPlaceholderText(I_PLACEHOLDER_RECIPIENT_ADDRESS)
-        self.recipient_address_input.setFixedSize(250, 40)
-        self.recipient_address_input.setStyleSheet(INPUT_LABEL_STYLE)
-        layout.addWidget(self.recipient_address_input)
+        # Campo de Username do Destinatário
+        self.recipient_username_input = QLineEdit()
+        self.recipient_username_input.setPlaceholderText(I_PLACEHOLDER_RECIPIENT_ADDRESS)
+        self.recipient_username_input.setFixedSize(250, 40)
+        self.recipient_username_input.setStyleSheet(INPUT_LABEL_STYLE)
+        layout.addWidget(self.recipient_username_input)
 
         # Botão Conversar
         self.start_chat_button = QPushButton(B_TO_TALK)
@@ -68,7 +68,7 @@ class ConnectToUserWindow(QWidget):
         self.setLayout(layout)
 
     def handle_start_chat(self):
-        recipient = self.recipient_address_input.text()
+        recipient = self.recipient_username_input.text()
 
         if not recipient:
             msg = QMessageBox(self)
