@@ -86,6 +86,8 @@ class ConnectToServerWindow(QWidget):
         nome = self.username_input.text()
         servidor = self.server_address_input.text()
 
+        # Verifica se os campos de nome e servidor estão preenchidos
+        # Se não estiverem, exibe uma mensagem de aviso
         if not nome or not servidor:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
@@ -95,4 +97,5 @@ class ConnectToServerWindow(QWidget):
             msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
         elif self.new_window_callback:
+            # Se os campos estiverem preenchidos, chama a função de mudança de janela
             self.change_window_callback(self.new_window_callback)

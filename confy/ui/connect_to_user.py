@@ -23,6 +23,8 @@ from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
 
 
 class ConnectToUserWindow(QWidget):
+    """Janela para conectar a um usuário específico."""
+
     def __init__(self):
         super().__init__()
 
@@ -70,6 +72,8 @@ class ConnectToUserWindow(QWidget):
     def handle_start_chat(self):
         recipient = self.recipient_username_input.text()
 
+        # Verifica se o campo de destinatário está vazio
+        # Se estiver, exibe uma mensagem de aviso
         if not recipient:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
