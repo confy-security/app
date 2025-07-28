@@ -44,10 +44,12 @@ quote-style = 'single'
 
 [tool.ruff.lint.per-file-ignores]
 'connect_to_server.py' = ['W293']
+'connect_to_user.py' = ['W293']
+'__init__.py' = ['F401']
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
-format = 'poetry run ruff format .'
+format = 'ruff format .; ruff check . --fix'
 radon = 'radon cc ./confy -a -na'
 bandit = 'bandit -r ./confy'
 run = 'poetry run python confy/__main__.py'

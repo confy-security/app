@@ -16,9 +16,21 @@ from confy.utils import Colors
 
 
 class ConnectToServerWindow(QWidget):
-    def __init__(self):
+    """Janela para conectar ao servidor.
+
+    Args:
+        change_window_callback (callable): Função para alterar a janela atual.
+        new_window_callback (QWidget, optional): Janela a ser exibida após a conexão.
+    """
+
+    def __init__(
+        self, change_window_callback, new_window_callback: QWidget = None
+    ):
         super().__init__()
-        self.setWindowTitle('Confy - Conectar ao servidor')
+
+        self.change_window_callback = change_window_callback
+        self.new_window_callback = new_window_callback
+
         self.resize(500, 300)
         self.setStyleSheet(f'background-color: {Colors.BACKGROUND};')
 
@@ -123,3 +135,5 @@ class ConnectToServerWindow(QWidget):
                 }
             """)
             msg.exec()
+        elif self.new_window_callback:
+            self.change_window_callback(self.new_window_callback)

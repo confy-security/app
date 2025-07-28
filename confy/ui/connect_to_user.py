@@ -18,9 +18,9 @@ from confy.utils import Colors
 class ConnectToUserWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Confy - Conectar ao usuario')
+
+        self.setWindowTitle('Confy - Conectar ao usuário')
         self.resize(500, 300)
-        self.setStyleSheet(f'background-color: {Colors.BACKGROUND};')
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
@@ -82,9 +82,9 @@ class ConnectToUserWindow(QWidget):
         self.setLayout(layout)
 
     def handle_start_chat(self):
-        destinatario = self.recipient_address_input.text()
+        recipient = self.recipient_address_input.text()
 
-        if not destinatario:
+        if not recipient:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
             msg.setWindowTitle('Campos obrigatórios')
