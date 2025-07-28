@@ -43,7 +43,7 @@ preview = true
 quote-style = 'single'
 
 [tool.ruff.lint.per-file-ignores]
-'connect_to_server.py' = ['W293']
+'qss.py' = ['W293']
 'connect_to_user.py' = ['W293']
 '__init__.py' = ['F401']
 
