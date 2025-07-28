@@ -23,9 +23,7 @@ class ConnectToServerWindow(QWidget):
         new_window_callback (QWidget, optional): Janela a ser exibida após a conexão.
     """
 
-    def __init__(
-        self, change_window_callback, new_window_callback: QWidget = None
-    ):
+    def __init__(self, change_window_callback, new_window_callback: QWidget = None):
         super().__init__()
 
         self.change_window_callback = change_window_callback
@@ -44,9 +42,7 @@ class ConnectToServerWindow(QWidget):
         self.logo.setAlignment(Qt.AlignCenter)
 
         # Renderiza o SVG em um QPixmap
-        with importlib.resources.path(
-            'confy.assets', 'shield.svg'
-        ) as img_path:
+        with importlib.resources.path('confy.assets', 'shield.svg') as img_path:
             svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
         pixmap.fill(Qt.transparent)

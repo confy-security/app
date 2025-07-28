@@ -32,9 +32,7 @@ class ConnectToUserWindow(QWidget):
         self.logo.setAlignment(Qt.AlignCenter)
 
         # Renderiza o SVG em um QPixmap
-        with importlib.resources.path(
-            'confy.assets', 'shield.svg'
-        ) as img_path:
+        with importlib.resources.path('confy.assets', 'shield.svg') as img_path:
             svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
         pixmap.fill(Qt.transparent)
@@ -49,9 +47,7 @@ class ConnectToUserWindow(QWidget):
 
         # Campo de Endereço do Destinatário
         self.recipient_address_input = QLineEdit()
-        self.recipient_address_input.setPlaceholderText(
-            'Endereço do Destinatário'
-        )
+        self.recipient_address_input.setPlaceholderText('Endereço do Destinatário')
         self.recipient_address_input.setFixedSize(250, 40)
         self.recipient_address_input.setStyleSheet(f"""
             background-color: {Colors.INPUT_BACKGROUND};

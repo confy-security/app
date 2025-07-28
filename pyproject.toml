@@ -32,7 +32,7 @@ pytest-cov = "^6.2.1"
 briefcase = "^0.3.24"
 
 [tool.ruff]
-line-length = 79
+line-length = 99
 
 [tool.ruff.lint]
 preview = true
