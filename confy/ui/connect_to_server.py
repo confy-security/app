@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
 )
 
 from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
-from confy.utils import Colors
 
 
 class ConnectToServerWindow(QWidget):
@@ -29,9 +28,6 @@ class ConnectToServerWindow(QWidget):
 
         self.change_window_callback = change_window_callback
         self.new_window_callback = new_window_callback
-
-        self.resize(500, 300)
-        self.setStyleSheet(f'background-color: {Colors.BACKGROUND};')
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)

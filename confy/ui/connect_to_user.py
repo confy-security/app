@@ -20,7 +20,6 @@ class ConnectToUserWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle('Confy - Conectar ao usuário')
-        self.resize(500, 300)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
