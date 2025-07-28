@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from confy.labels import W_CONNECT_SERVER_TITLE
 from confy.ui import ConnectToServerWindow, ConnectToUserWindow
 from confy.utils import Colors
 
@@ -14,7 +15,7 @@ from confy.utils import Colors
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Confy - Conectar ao servidor')
+        self.setWindowTitle(W_CONNECT_SERVER_TITLE)
         self.resize(500, 300)
         self.setStyleSheet(f'background-color: {Colors.BACKGROUND};')
 

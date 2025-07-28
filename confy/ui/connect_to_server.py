@@ -12,6 +12,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from confy.labels import (
+    B_CONNECT,
+    I_PLACEHOLDER_SERVER_ADDRESS,
+    I_PLACEHOLDER_USERNAME,
+    W_WARNING_REQUIRED_FIELDS_TEXT,
+    W_WARNING_REQUIRED_FIELDS_TITLE,
+)
 from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
 
 
@@ -54,20 +61,20 @@ class ConnectToServerWindow(QWidget):
 
         # Campo Username
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText('Username')
+        self.username_input.setPlaceholderText(I_PLACEHOLDER_USERNAME)
         self.username_input.setFixedSize(250, 40)
         self.username_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.username_input)
 
         # Campo de Endereço do Servidor
         self.server_address_input = QLineEdit()
-        self.server_address_input.setPlaceholderText('Endereço do Servidor')
+        self.server_address_input.setPlaceholderText(I_PLACEHOLDER_SERVER_ADDRESS)
         self.server_address_input.setFixedSize(250, 40)
         self.server_address_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.server_address_input)
 
         # Botão Conectar
-        self.connect_button = QPushButton('Conectar')
+        self.connect_button = QPushButton(B_CONNECT)
         self.connect_button.clicked.connect(self.handle_login)
         self.connect_button.setFixedSize(100, 40)
         self.connect_button.setStyleSheet(BUTTON_STYLE)
@@ -82,8 +89,8 @@ class ConnectToServerWindow(QWidget):
         if not nome or not servidor:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
-            msg.setWindowTitle('Campos obrigatórios')
-            msg.setText('Você precisa preencher todos os campos!')
+            msg.setWindowTitle(W_WARNING_REQUIRED_FIELDS_TITLE)
+            msg.setText(W_WARNING_REQUIRED_FIELDS_TEXT)
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
