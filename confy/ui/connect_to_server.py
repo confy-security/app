@@ -12,15 +12,29 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from confy.utils import Colors
+from confy.labels import (
+    B_CONNECT,
+    I_PLACEHOLDER_SERVER_ADDRESS,
+    I_PLACEHOLDER_USERNAME,
+    W_WARNING_REQUIRED_FIELDS_TEXT,
+    W_WARNING_REQUIRED_FIELDS_TITLE,
+)
+from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
 
 
 class ConnectToServerWindow(QWidget):
-    def __init__(self):
+    """Janela para conectar ao servidor.
+
+    Args:
+        change_window_callback (callable): Função para alterar a janela atual.
+        new_window_callback (QWidget, optional): Janela a ser exibida após a conexão.
+    """
+
+    def __init__(self, change_window_callback, new_window_callback: QWidget = None):
         super().__init__()
-        self.setWindowTitle('Confy - Conectar ao servidor')
-        self.resize(500, 300)
-        self.setStyleSheet(f'background-color: {Colors.BACKGROUND};')
+
+        self.change_window_callback = change_window_callback
+        self.new_window_callback = new_window_callback
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
@@ -32,9 +46,7 @@ class ConnectToServerWindow(QWidget):
         self.logo.setAlignment(Qt.AlignCenter)
 
         # Renderiza o SVG em um QPixmap
-        with importlib.resources.path(
-            'confy.assets', 'shield.svg'
-        ) as img_path:
+        with importlib.resources.path('confy.assets', 'shield.svg') as img_path:
             svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
         pixmap.fill(Qt.transparent)
@@ -49,45 +61,23 @@ class ConnectToServerWindow(QWidget):
 
         # Campo Username
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText('Username')
+        self.username_input.setPlaceholderText(I_PLACEHOLDER_USERNAME)
         self.username_input.setFixedSize(250, 40)
-        self.username_input.setStyleSheet(f"""
-            background-color: {Colors.INPUT_BACKGROUND};
-            border: 1.3px solid {Colors.BORDER};
-            border-radius: 10px;
-            padding: 8px;
-            color: white;
-        """)
+        self.username_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.username_input)
 
         # Campo de Endereço do Servidor
         self.server_address_input = QLineEdit()
-        self.server_address_input.setPlaceholderText('Endereço do Servidor')
+        self.server_address_input.setPlaceholderText(I_PLACEHOLDER_SERVER_ADDRESS)
         self.server_address_input.setFixedSize(250, 40)
-        self.server_address_input.setStyleSheet(f"""
-            background-color: {Colors.INPUT_BACKGROUND};
-            border: 1.3px solid {Colors.BORDER};
-            border-radius: 10px;
-            padding: 8px;
-            color: white;
-        """)
+        self.server_address_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.server_address_input)
 
         # Botão Conectar
-        self.connect_button = QPushButton('Conectar')
+        self.connect_button = QPushButton(B_CONNECT)
         self.connect_button.clicked.connect(self.handle_login)
         self.connect_button.setFixedSize(100, 40)
-        self.connect_button.setStyleSheet("""
-            QPushButton {
-                background-color: white;
-                color: black;
-                border-radius: 20px;
-            }
-
-            QPushButton:hover {
-                background-color: #C0C0C0;
-            }
-        """)
+        self.connect_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.connect_button, alignment=Qt.AlignCenter)
 
         self.setLayout(layout)
@@ -96,30 +86,16 @@ class ConnectToServerWindow(QWidget):
         nome = self.username_input.text()
         servidor = self.server_address_input.text()
 
+        # Verifica se os campos de nome e servidor estão preenchidos
+        # Se não estiverem, exibe uma mensagem de aviso
         if not nome or not servidor:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
-            msg.setWindowTitle('Campos obrigatórios')
-            msg.setText('Você precisa preencher todos os campos!')
+            msg.setWindowTitle(W_WARNING_REQUIRED_FIELDS_TITLE)
+            msg.setText(W_WARNING_REQUIRED_FIELDS_TEXT)
             msg.setStandardButtons(QMessageBox.Ok)
-            msg.setStyleSheet("""
-                QMessageBox {
-                    background-color: #212121;
-                    color: white;
-                }
-                QLabel {
-                    color: white;
-                    font-size: 14px;
-                }
-                QPushButton {
-                    background-color: white;
-                    color: black;
-                    padding: 5px 15px;
-                    border-radius: 14px;
-                }
-                
-                QPushButton:hover {
-                    background-color: #C0C0C0;
-                }
-            """)
+            msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
+        elif self.new_window_callback:
+            # Se os campos estiverem preenchidos, chama a função de mudança de janela
+            self.change_window_callback(self.new_window_callback)
