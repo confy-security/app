@@ -1,6 +1,6 @@
 [project]
 name = "confy"
-version = "0.1.0.dev1"
+version = "0.0.1.dev1"
 description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
     {name = "Henrique Sebastião",email = "contato@henriquesebastiao.com"},
@@ -56,6 +56,7 @@ run = 'python confy/__main__.py'
 test = 'pytest -s -x --cov=confy -vv; poetry run coverage html'
 build = 'briefcase build'
 package = 'briefcase package'
+changelog = 'github_changelog_generator -u confy-security -p app -o CHANGELOG --no-verbose'
 
 [tool.pytest.ini_options]
 pythonpath = "."
@@ -68,7 +69,7 @@ omit = ["__main__.py", "utils.py"]
 
 [tool.briefcase]
 project_name = "Confy"
-version = "0.1.0.dev1"
+version = "0.0.1.dev1"
 author = "Confy Security"
 author_email = "confy@henriquesebastiao.com"
 url = "https://github.com/confy-security/app"

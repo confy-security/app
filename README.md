@@ -12,8 +12,8 @@
 
 <div align="center">
 
-[![GitHub License](https://img.shields.io/github/license/confy-security/app?color=blue
-)](/LICENSE)
+[![Code Quality](https://github.com/confy-security/app/actions/workflows/code-quality.yml/badge.svg)](https://github.com/confy-security/app/actions/workflows/code-quality.yml)
+[![GitHub License](https://img.shields.io/github/license/confy-security/app?color=blue)](/LICENSE)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=confy-security%2Fapp&label=repository%20visits&countColor=%231182c3&style=flat)](https://github.com/confy-security/app)
   
 </div>
@@ -27,7 +27,7 @@ Antes de iniciar você deve ter as seguintes ferramentas instaladas:
 - [Python 3.13.5](https://www.python.org/downloads/)
 
 > [!IMPORTANT]
-> Devido as dependências da aplicação, recomendamos que use especificamente a versão 3.13.5 (mais recente) do Python durante o desenvolvimento.
+> Devido as dependências da aplicação, recomendamos que use especificamente a versão 3.13.5 do Python durante o desenvolvimento.
 
 #### Clone o repositório
 
