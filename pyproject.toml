@@ -52,10 +52,10 @@ lint = 'ruff check .; ruff check . --diff'
 format = 'ruff format .; ruff check . --fix'
 radon = 'radon cc ./confy -a -na'
 bandit = 'bandit -r ./confy'
-run = 'poetry run python confy/__main__.py'
-test = 'poetry run pytest -s -x --cov=confy -vv; poetry run coverage html'
-build = 'poetry run briefcase build'
-package = 'poetry run briefcase package'
+run = 'python confy/__main__.py'
+test = 'pytest -s -x --cov=confy -vv; poetry run coverage html'
+build = 'briefcase build'
+package = 'briefcase package'
 
 [tool.pytest.ini_options]
 pythonpath = "."
