@@ -128,17 +128,11 @@ Fluxo de troca de chaves criptográficas:
 1. O aplicativo do usuário que iniciou a conexão gera um
    par de chaves assimétricas (pública e privada) e envia a
    chave pública para o destinatário.
-2. O destinatário recebe a chave pública e gera um par de
-   chaves assimétricas (pública e privada), enviando sua chave
-   pública de volta ao remetente.
-3. O remetente recebe a chave pública do destinatário e gera
-   uma chave simétrica (por exemplo, AES) para criptografar
-   as mensagens.
-4. O remetente criptografa a chave simétrica com a chave
-   pública do destinatário e envia essa chave criptografada
-   para o destinatário.
-5. O destinatário recebe a chave simétrica criptografada,
-   descriptografa-a usando sua chave privada e obtém a chave
+2. O destinatário recebe a chave pública e gera uma chave simétrica,
+   criptografa a chave simétrica com a chave pública do remetente e
+   lhe envia a chave simétrica.
+3. O remetente recebe a chave simétrica do destinatário e
+   a descriptografa com sua chave privada e obtém a chave
    simétrica compartilhada.
 
 O fluxograma abaixo ilustra o processo de troca de
@@ -159,15 +153,13 @@ sequenceDiagram
     Note over Cliente A: Gera par de chaves (pública, privada)
     Cliente A->>Cliente B: Envia chave pública (A_pub)
 
-    Note over Cliente B: Gera par de chaves (pública, privada)
-    Cliente B->>Cliente A: Envia chave pública (B_pub)
+    Note over Cliente B: Gera chave simétrica (AES) e criptografa com A_pub
+    Cliente B->>Cliente A: Envia chave simétrica criptografada
 
-    Note over Cliente A: Gera chave simétrica (AES)
-    Cliente A->>Cliente B: Envia chave simétrica criptografada com B_pub
-
-    Note over Cliente B: Usa chave privada para descriptografar AES
+    Note over Cliente A: Usa chave privada para descriptografar AES
 
     Note over Cliente A, Cliente B: Ambos agora compartilham a mesma chave simétrica para criptografia de mensagens
+
 ```
 
 ### 3. Envio e recebimento de mensagens
@@ -197,7 +189,6 @@ sequenceDiagram
     participant Servidor
     participant Cliente B   
     Note over Cliente A, Cliente B: Ambos já compartilharam a chave simétrica
-    Cliente A->>Cliente B: Envia mensagem criptografada
     Cliente A->>Servidor: Envia mensagem criptografada
     Servidor-->>Cliente B: Encaminha mensagem criptografada
     Cliente B->>Cliente B: Descriptografa mensagem usando chave simétrica
