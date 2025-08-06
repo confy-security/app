@@ -146,7 +146,7 @@ jobs:
           path: logs/*
       
       - name: Download CHANGELOG artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: CHANGELOG
           path: .
