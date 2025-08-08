@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: Confy Desktop
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Emanuel Chagas
+    family-names: Pinheiro Mattos
+    email: pinheiroemanuel192@gmail.com
+  - given-names: Henrique Sebastião
+    family-names: Silva Rosa
+    email: contato@henriquesebastiao.com
+    orcid: 'https://orcid.org/0009-0000-7393-6211'
+  - given-names: Lucas
+    family-names: Souza de Deus
+  - given-names: Valério
+    family-names: Gonçalves Vieira Junior
+    email: valeriogoncalvesdev@gmail.com
+  - given-names: Wanderson
+    family-names: Amorim Pinheiro
+    email: wandersonfla100@hotmail.com
+identifiers:
+repository-code: 'https://github.com/confy-security/app'
+url: 'https://github.com/confy-security'
+abstract: >-
+  Aplicativo desktop para o sistema Confy de comunicação criptografada
+keywords:
+  - confy
+  - pyside6
+license: GPL-3
