@@ -3,11 +3,11 @@ name = "confy"
 version = "0.0.1.dev1"
 description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
-    {name = "Henrique Sebastião",email = "contato@henriquesebastiao.com"},
-    {name = "Valério Gonçalves",email = "valeriogoncalvesdev@gmail.com"},
-    {name = "Lucas Sousa",email = "lucasofc-15@outlook.com"},
-    {name = "Wanderson Amorim",email = "wandersonfla100@hotmail.com"},
-    {name = "Emanuel Chagas",email = "pinheiroemanuel192@gmail.com"},
+    {name = "Henrique Sebastião", email = "contato@henriquesebastiao.com"},
+    {name = "Valério Gonçalves", email = "valeriogoncalvesdev@gmail.com"},
+    {name = "Lucas Sousa", email = "lucasdedeus-15@hotmail.com"},
+    {name = "Wanderson Amorim", email = "wandersonfla100@hotmail.com"},
+    {name = "Emanuel Chagas", email = "pinheiroemanuel192@gmail.com"},
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -15,7 +15,6 @@ requires-python = "==3.13.5"
 dependencies = [
     "pyside6-essentials (>=6.9.1,<7.0.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
