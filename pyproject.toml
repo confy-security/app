@@ -11,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = "==3.13.5"
+requires-python = "==3.13.7"
 dependencies = [
     "pyside6-essentials (>=6.9.1,<7.0.0)"
 ]
