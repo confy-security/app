@@ -83,12 +83,12 @@ class ConnectToServerWindow(QWidget):
         self.setLayout(layout)
 
     def handle_login(self):
-        nome = self.username_input.text()
-        servidor = self.server_address_input.text()
+        username = self.username_input.text()
+        server_address = self.server_address_input.text()
 
         # Verifica se os campos de nome e servidor estão preenchidos
         # Se não estiverem, exibe uma mensagem de aviso
-        if not nome or not servidor:
+        if not username or not server_address:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Warning)
             msg.setWindowTitle(W_WARNING_REQUIRED_FIELDS_TITLE)
@@ -96,6 +96,11 @@ class ConnectToServerWindow(QWidget):
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
-        elif self.new_window_callback:
-            # Se os campos estiverem preenchidos, chama a função de mudança de janela
-            self.change_window_callback(self.new_window_callback)
+        else:
+            # Salva os dados no MainWindow
+            main_window = self.parentWidget().parentWidget()
+            main_window.username = username
+            main_window.server_address = server_address
+            if self.new_window_callback:
+                # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                self.change_window_callback(self.new_window_callback)

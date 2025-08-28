@@ -25,8 +25,11 @@ from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
 class ConnectToUserWindow(QWidget):
     """Janela para conectar a um usuário específico."""
 
-    def __init__(self):
+    def __init__(self, change_window_callback, new_window_callback: QWidget = None):
         super().__init__()
+
+        self.change_window_callback = change_window_callback
+        self.new_window_callback = new_window_callback
 
         self.setWindowTitle(W_CONNECT_RECIPIENT_TITLE)
 
@@ -82,3 +85,9 @@ class ConnectToUserWindow(QWidget):
             msg.setStandardButtons(QMessageBox.Ok)
             msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
+        else:
+            main_window = self.parentWidget().parentWidget()
+            main_window.recipient = recipient
+            if self.new_window_callback:
+                # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                self.change_window_callback(self.new_window_callback)
