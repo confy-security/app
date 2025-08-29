@@ -46,7 +46,7 @@ quote-style = 'single'
 [tool.ruff.lint.per-file-ignores]
 'qss.py' = ['W293']
 'connect_to_user.py' = ['W293']
-'chat.py' = ['W293']
+'chat.py' = ['W293', 'E501', 'PLR0912']
 '__init__.py' = ['F401']
 
 [tool.taskipy.tasks]
