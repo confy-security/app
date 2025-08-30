@@ -1,5 +1,8 @@
 import importlib.resources
+from http import HTTPStatus
+from urllib.parse import urljoin
 
+import httpx
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
@@ -20,6 +23,7 @@ from confy.labels import (
     W_WARNING_REQUIRED_FIELDS_TITLE,
 )
 from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
+from confy.utils import get_protocol
 
 
 class ConnectToServerWindow(QWidget):
@@ -97,10 +101,51 @@ class ConnectToServerWindow(QWidget):
             msg.setStyleSheet(WARNING_WIDGET_STYLE)
             msg.exec()
         else:
-            # Salva os dados no MainWindow
-            main_window = self.parentWidget().parentWidget()
-            main_window.username = username
-            main_window.server_address = server_address
-            if self.new_window_callback:
-                # Se os campos estiverem preenchidos, chama a função de mudança de janela
-                self.change_window_callback(self.new_window_callback)
+            # === INICIALIZAÇÃO DA VERIFICAÇÃO DE USERNAME ===
+            # Desabilita botão para prevenir múltiplas requisições simultâneas
+            self.connect_button.setEnabled(False)
+            self.connect_button.setText('Verificando...')
+
+            # TODO
+            # === CONSTRUÇÃO DA URL DO ENDPOINT ===
+            # Garante que o servidor tenha protocolo HTTP(S)
+            protocol, host = get_protocol(server_address, check_username=True)
+            base_url = f'{protocol}://{host}'
+
+            # Constrói URL completa para verificação de username
+            endpoint = f'/online-users/{username}'
+            url = urljoin(base_url, endpoint)
+
+            # === REQUISIÇÃO HTTP COM TIMEOUT ===
+            # Timeout de 10 segundos para evitar travamento indefinido
+            response = httpx.get(url, timeout=10)
+
+            if response.status_code == HTTPStatus.OK:
+                # Status 200: Username está disponível
+                # Salva os dados no MainWindow
+                main_window = self.parentWidget().parentWidget()
+                main_window.username = username
+                main_window.server_address = server_address
+                if self.new_window_callback:
+                    # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                    self.change_window_callback(self.new_window_callback)
+            elif response.status_code == HTTPStatus.CONFLICT:
+                # Status 409 (Conflict): Username já está em uso
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle('Username Indisponível')
+                msg.setText('Este nome de usuário já está em uso. Tente outro nome.')
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setStyleSheet(WARNING_WIDGET_STYLE)
+                msg.exec()
+            else:
+                # Outros códigos de status: erro inesperado
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle('Erro de Conexão')
+                msg.setText('Não foi possível verificar a disponibilidade do username.')
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setStyleSheet(WARNING_WIDGET_STYLE)
+                msg.exec()
+            self.connect_button.setEnabled(True)
+            self.connect_button.setText(B_CONNECT)

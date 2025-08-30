@@ -44,7 +44,7 @@ def is_prefix(message, prefix: str) -> bool:
     return False
 
 
-def get_protocol(url: str) -> tuple[str]:
+def get_protocol(url: str, check_username: bool | None = None) -> tuple[str]:
     """Determina o protocolo WebSocket apropriado (ws ou wss) com base no esquema da URL.
 
     Args:
@@ -61,6 +61,9 @@ def get_protocol(url: str) -> tuple[str]:
 
     if hostname[0] == 'https':
         protocol = 'wss'
+
+    if check_username:
+        protocol = 'https' if hostname[0] == 'https' else 'http'
 
     return protocol, hostname[1]
 
