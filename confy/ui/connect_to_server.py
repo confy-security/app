@@ -83,6 +83,9 @@ class ConnectToServerWindow(QWidget):
         self.connect_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.connect_button, alignment=Qt.AlignCenter)
 
+        # Conectar ao pressionar Enter no campo de endereço do servidor
+        self.server_address_input.returnPressed.connect(self.handle_login)
+
         self.setLayout(layout)
 
     def handle_login(self):

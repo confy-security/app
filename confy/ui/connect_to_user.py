@@ -73,6 +73,9 @@ class ConnectToUserWindow(QWidget):
         self.start_chat_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.start_chat_button, alignment=Qt.AlignCenter)
 
+        # Iniciar chat ao pressionar Enter no campo de ID do destinatário
+        self.recipient_username_input.returnPressed.connect(self.handle_start_chat)
+
         self.setLayout(layout)
 
     def handle_start_chat(self):
