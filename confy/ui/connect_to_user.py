@@ -9,7 +9,6 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -22,8 +21,8 @@ from confy.labels import (
     W_WARNING_REQUIRED_FIELDS_TEXT,
     W_WARNING_REQUIRED_FIELDS_TITLE,
 )
-from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
-from confy.utils import get_protocol
+from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE
+from confy.utils import get_protocol, warning_message_box
 
 
 class ConnectToUserWindow(QWidget):
@@ -82,24 +81,16 @@ class ConnectToUserWindow(QWidget):
         # Verifica se o campo de destinatário está vazio
         # Se estiver, exibe uma mensagem de aviso
         if not recipient:
-            msg = QMessageBox(self)
-            msg.setIcon(QMessageBox.Warning)
-            msg.setWindowTitle(W_WARNING_REQUIRED_FIELDS_TITLE)
-            msg.setText(W_WARNING_REQUIRED_FIELDS_TEXT)
-            msg.setStandardButtons(QMessageBox.Ok)
-            msg.setStyleSheet(WARNING_WIDGET_STYLE)
-            msg.exec()
+            warning_message_box(
+                self, W_WARNING_REQUIRED_FIELDS_TITLE, W_WARNING_REQUIRED_FIELDS_TEXT
+            )
         else:
             main_window = self.parentWidget().parentWidget()
 
             if recipient == main_window.username:
-                msg = QMessageBox(self)
-                msg.setIcon(QMessageBox.Warning)
-                msg.setWindowTitle('Conflito')
-                msg.setText('Remetente e destinatário não podem ser o mesmo usuário.')
-                msg.setStandardButtons(QMessageBox.Ok)
-                msg.setStyleSheet(WARNING_WIDGET_STYLE)
-                msg.exec()
+                warning_message_box(
+                    self, 'Conflito', 'Remetente e destinatário não podem ser o mesmo usuário.'
+                )
             else:
                 # === VERIFICA SE DESTINATÁRIO NÃO ESTÁ CONVERSANDO COM ALGUÉM ===
                 # Desabilitar botão de conversa
@@ -123,21 +114,17 @@ class ConnectToUserWindow(QWidget):
                         self.change_window_callback(self.new_window_callback)
                 elif response.status_code == HTTPStatus.LOCKED:
                     # Status 423 (Locked): Destinatário já está em uma conversa ativa
-                    msg = QMessageBox(self)
-                    msg.setIcon(QMessageBox.Warning)
-                    msg.setWindowTitle('Destinatário Indisponível')
-                    msg.setText('O destinatário já está em uma conversa.')
-                    msg.setStandardButtons(QMessageBox.Ok)
-                    msg.setStyleSheet(WARNING_WIDGET_STYLE)
-                    msg.exec()
+                    warning_message_box(
+                        self,
+                        'Destinatário Indisponível',
+                        'O destinatário já está em uma conversa.',
+                    )
                 else:
                     # Outros códigos de status: erro inesperado
-                    msg = QMessageBox(self)
-                    msg.setIcon(QMessageBox.Warning)
-                    msg.setWindowTitle('Erro de Conexão')
-                    msg.setText('Não foi possível verificar a disponibilidade do destinatário.')
-                    msg.setStandardButtons(QMessageBox.Ok)
-                    msg.setStyleSheet(WARNING_WIDGET_STYLE)
-                    msg.exec()
+                    warning_message_box(
+                        self,
+                        'Erro de Conexão',
+                        'Não foi possível verificar a disponibilidade do destinatário.',
+                    )
                 self.start_chat_button.setEnabled(True)
                 self.start_chat_button.setText(B_TO_TALK)

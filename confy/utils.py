@@ -5,6 +5,7 @@ from enum import Enum
 from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtGui import QIcon, QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtWidgets import QMessageBox
 
 
 class Colors(Enum):
@@ -80,3 +81,31 @@ def icon(svg_string, size=24, color: str | None = None):
     renderer.render(painter)
     painter.end()
     return QIcon(pixmap)
+
+
+def warning_message_box(object, title: str, text: str):
+    msg = QMessageBox(object)
+    msg.setIcon(QMessageBox.Warning)
+    msg.setWindowTitle(title)
+    msg.setText(text)
+    msg.setStandardButtons(QMessageBox.Ok)
+    msg.setStyleSheet("""
+    QMessageBox {
+        background-color: #212121;
+        color: white;
+    }
+    QLabel {
+        color: white;
+        font-size: 14px;
+    }
+    QPushButton {
+        background-color: white;
+        color: black;
+        padding: 5px 15px;
+        border-radius: 14px;
+    }
+    QPushButton:hover {
+        background-color: #C0C0C0;
+    }
+""")
+    msg.exec()

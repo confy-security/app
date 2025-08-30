@@ -19,24 +19,3 @@ BUTTON_STYLE = """
         background-color: #C0C0C0;
     }
 """
-
-WARNING_WIDGET_STYLE = """
-    QMessageBox {
-        background-color: #212121;
-        color: white;
-    }
-    QLabel {
-        color: white;
-        font-size: 14px;
-    }
-    QPushButton {
-        background-color: white;
-        color: black;
-        padding: 5px 15px;
-        border-radius: 14px;
-    }
-    
-    QPushButton:hover {
-        background-color: #C0C0C0;
-    }
-"""
