@@ -106,7 +106,6 @@ class ConnectToServerWindow(QWidget):
             self.connect_button.setEnabled(False)
             self.connect_button.setText('Verificando...')
 
-            # TODO
             # === CONSTRUÇÃO DA URL DO ENDPOINT ===
             # Garante que o servidor tenha protocolo HTTP(S)
             protocol, host = get_protocol(server_address, check_username=True)

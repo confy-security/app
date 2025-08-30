@@ -1,5 +1,8 @@
 import importlib.resources
+from http import HTTPStatus
+from urllib.parse import urljoin
 
+import httpx
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
@@ -20,6 +23,7 @@ from confy.labels import (
     W_WARNING_REQUIRED_FIELDS_TITLE,
 )
 from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
+from confy.utils import get_protocol
 
 
 class ConnectToUserWindow(QWidget):
@@ -87,7 +91,53 @@ class ConnectToUserWindow(QWidget):
             msg.exec()
         else:
             main_window = self.parentWidget().parentWidget()
-            main_window.recipient = recipient
-            if self.new_window_callback:
-                # Se os campos estiverem preenchidos, chama a função de mudança de janela
-                self.change_window_callback(self.new_window_callback)
+
+            if recipient == main_window.username:
+                msg = QMessageBox(self)
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle('Conflito')
+                msg.setText('Remetente e destinatário não podem ser o mesmo usuário.')
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.setStyleSheet(WARNING_WIDGET_STYLE)
+                msg.exec()
+            else:
+                # === VERIFICA SE DESTINATÁRIO NÃO ESTÁ CONVERSANDO COM ALGUÉM ===
+                # Desabilitar botão de conversa
+                self.start_chat_button.setEnabled(False)
+                self.start_chat_button.setText('Verificando...')
+
+                # === CONSTRUÇÃO DA URL DO ENDPOINT ===
+                # Garante que o servidor tenha protocolo HTTP(S)
+                protocol, host = get_protocol(main_window.server_address, check_username=True)
+                base_url = f'{protocol}://{host}'
+
+                endpoint = f'/ws/check-availability/{recipient}'
+                url = urljoin(base_url, endpoint)
+
+                response = httpx.get(url, timeout=10)
+
+                if response.status_code == HTTPStatus.OK:
+                    main_window.recipient = recipient
+                    if self.new_window_callback:
+                        # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                        self.change_window_callback(self.new_window_callback)
+                elif response.status_code == HTTPStatus.LOCKED:
+                    # Status 423 (Locked): Destinatário já está em uma conversa ativa
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setWindowTitle('Destinatário Indisponível')
+                    msg.setText('O destinatário já está em uma conversa.')
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.setStyleSheet(WARNING_WIDGET_STYLE)
+                    msg.exec()
+                else:
+                    # Outros códigos de status: erro inesperado
+                    msg = QMessageBox(self)
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setWindowTitle('Erro de Conexão')
+                    msg.setText('Não foi possível verificar a disponibilidade do destinatário.')
+                    msg.setStandardButtons(QMessageBox.Ok)
+                    msg.setStyleSheet(WARNING_WIDGET_STYLE)
+                    msg.exec()
+                self.start_chat_button.setEnabled(True)
+                self.start_chat_button.setText(B_TO_TALK)
