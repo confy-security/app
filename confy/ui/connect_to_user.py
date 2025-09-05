@@ -1,12 +1,14 @@
 import importlib.resources
+from http import HTTPStatus
+from urllib.parse import urljoin
 
+import httpx
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -19,14 +21,18 @@ from confy.labels import (
     W_WARNING_REQUIRED_FIELDS_TEXT,
     W_WARNING_REQUIRED_FIELDS_TITLE,
 )
-from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE, WARNING_WIDGET_STYLE
+from confy.qss import BUTTON_STYLE, INPUT_LABEL_STYLE
+from confy.utils import get_protocol, warning_message_box
 
 
 class ConnectToUserWindow(QWidget):
     """Janela para conectar a um usuário específico."""
 
-    def __init__(self):
+    def __init__(self, change_window_callback, new_window_callback: QWidget = None):
         super().__init__()
+
+        self.change_window_callback = change_window_callback
+        self.new_window_callback = new_window_callback
 
         self.setWindowTitle(W_CONNECT_RECIPIENT_TITLE)
 
@@ -67,6 +73,9 @@ class ConnectToUserWindow(QWidget):
         self.start_chat_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.start_chat_button, alignment=Qt.AlignCenter)
 
+        # Iniciar chat ao pressionar Enter no campo de ID do destinatário
+        self.recipient_username_input.returnPressed.connect(self.handle_start_chat)
+
         self.setLayout(layout)
 
     def handle_start_chat(self):
@@ -75,10 +84,50 @@ class ConnectToUserWindow(QWidget):
         # Verifica se o campo de destinatário está vazio
         # Se estiver, exibe uma mensagem de aviso
         if not recipient:
-            msg = QMessageBox(self)
-            msg.setIcon(QMessageBox.Warning)
-            msg.setWindowTitle(W_WARNING_REQUIRED_FIELDS_TITLE)
-            msg.setText(W_WARNING_REQUIRED_FIELDS_TEXT)
-            msg.setStandardButtons(QMessageBox.Ok)
-            msg.setStyleSheet(WARNING_WIDGET_STYLE)
-            msg.exec()
+            warning_message_box(
+                self, W_WARNING_REQUIRED_FIELDS_TITLE, W_WARNING_REQUIRED_FIELDS_TEXT
+            )
+        else:
+            main_window = self.parentWidget().parentWidget()
+
+            if recipient == main_window.username:
+                warning_message_box(
+                    self, 'Conflito', 'Remetente e destinatário não podem ser o mesmo usuário.'
+                )
+            else:
+                # === VERIFICA SE DESTINATÁRIO NÃO ESTÁ CONVERSANDO COM ALGUÉM ===
+                # Desabilitar botão de conversa
+                self.start_chat_button.setEnabled(False)
+                self.start_chat_button.setText('Verificando...')
+
+                # === CONSTRUÇÃO DA URL DO ENDPOINT ===
+                # Garante que o servidor tenha protocolo HTTP(S)
+                protocol, host = get_protocol(main_window.server_address, check_username=True)
+                base_url = f'{protocol}://{host}'
+
+                endpoint = f'/ws/check-availability/{recipient}'
+                url = urljoin(base_url, endpoint)
+
+                response = httpx.get(url, timeout=10)
+
+                if response.status_code == HTTPStatus.OK:
+                    main_window.recipient = recipient
+                    if self.new_window_callback:
+                        # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                        self.change_window_callback(self.new_window_callback)
+                elif response.status_code == HTTPStatus.LOCKED:
+                    # Status 423 (Locked): Destinatário já está em uma conversa ativa
+                    warning_message_box(
+                        self,
+                        'Destinatário Indisponível',
+                        'O destinatário já está em uma conversa.',
+                    )
+                else:
+                    # Outros códigos de status: erro inesperado
+                    warning_message_box(
+                        self,
+                        'Erro de Conexão',
+                        'Não foi possível verificar a disponibilidade do destinatário.',
+                    )
+                self.start_chat_button.setEnabled(True)
+                self.start_chat_button.setText(B_TO_TALK)

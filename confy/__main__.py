@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from confy.labels import W_CONNECT_SERVER_TITLE
-from confy.ui import ConnectToServerWindow, ConnectToUserWindow
+from confy.ui import ChatWindow, ConnectToServerWindow, ConnectToUserWindow
 from confy.utils import Colors
 
 
@@ -23,22 +23,31 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
-        self.connect_to_user_window = ConnectToUserWindow()
+        self.chat_window = ChatWindow()
+        self.connect_to_user_window = ConnectToUserWindow(self.change_window, self.chat_window)
         self.connect_to_server_window = ConnectToServerWindow(
             self.change_window, self.connect_to_user_window
         )
 
         self.stack.addWidget(self.connect_to_server_window)
         self.stack.addWidget(self.connect_to_user_window)
+        self.stack.addWidget(self.chat_window)
 
     def change_window(self, new_window: QWidget):
-        """Altera a janela atual exibida na pilha.
-
-        Args:
-            new_window (QWidget): A nova janela a ser exibida.
-        """
-        self.stack.setCurrentWidget(new_window)
-        self.setWindowTitle(new_window.windowTitle())
+        if isinstance(new_window, ChatWindow):
+            # Crie uma nova instância do ChatWindow com os dados
+            chat_window = ChatWindow(
+                username=getattr(self, 'username', None),
+                recipient=getattr(self, 'recipient', None),
+                server_address=getattr(self, 'server_address', None),
+            )
+            self.stack.addWidget(chat_window)
+            self.stack.setCurrentWidget(chat_window)
+            self.setWindowTitle(chat_window.windowTitle())
+            self.resize(600, 500)  # <-- aumenta o tamanho da janela aqui
+        else:
+            self.stack.setCurrentWidget(new_window)
+            self.setWindowTitle(new_window.windowTitle())
 
 
 if __name__ == '__main__':
