@@ -2,7 +2,37 @@
 
 ## [Unreleased](https://github.com/confy-security/app/tree/HEAD)
 
-[Full Changelog](https://github.com/confy-security/app/compare/f49e0d83fccdb31213d50b5d3a7c7dfad073681e...HEAD)
+[Full Changelog](https://github.com/confy-security/app/compare/0.0.1.dev1...HEAD)
+
+**Closed issues:**
+
+- Janela de chat [\#23](https://github.com/confy-security/app/issues/23)
+- Otimizar o processo de troca de chaves criptográficas descrito da documentação [\#21](https://github.com/confy-security/app/issues/21)
+- Treminar conexão [\#20](https://github.com/confy-security/app/issues/20)
+- Passar as mensagems para frente [\#19](https://github.com/confy-security/app/issues/19)
+- Estabelecer conexao [\#18](https://github.com/confy-security/app/issues/18)
+- Receber ID dos usuarios. [\#17](https://github.com/confy-security/app/issues/17)
+- Configurar geração de changelogs automáticos com CI [\#12](https://github.com/confy-security/app/issues/12)
+- Documentar a lógica da comunicação entre os usuários e o servidor [\#11](https://github.com/confy-security/app/issues/11)
+- Realizar build dos binários nativos via GitHub Actions [\#10](https://github.com/confy-security/app/issues/10)
+- Fazer segunda aba do projeto. [\#9](https://github.com/confy-security/app/issues/9)
+- Sugestão página de chat [\#3](https://github.com/confy-security/app/issues/3)
+- Sugestão página de conexão com usuário [\#2](https://github.com/confy-security/app/issues/2)
+- Sugestão página de conexão [\#1](https://github.com/confy-security/app/issues/1)
+
+**Merged pull requests:**
+
+- Adicionando tela de chat [\#25](https://github.com/confy-security/app/pull/25) ([henriquesebastiao](https://github.com/henriquesebastiao))
+- build\(deps\): Bump actions/checkout from 4 to 5 [\#24](https://github.com/confy-security/app/pull/24) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): Bump actions/download-artifact from 4 to 5 [\#22](https://github.com/confy-security/app/pull/22) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Adicionando segunda tela [\#16](https://github.com/confy-security/app/pull/16) ([henriquesebastiao](https://github.com/henriquesebastiao))
+- build\(deps\): Bump actions/setup-python from 4 to 5 [\#15](https://github.com/confy-security/app/pull/15) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Documentando a lógica de comunicação entre o aplicativo cliente e servidor [\#14](https://github.com/confy-security/app/pull/14) ([henriquesebastiao](https://github.com/henriquesebastiao))
+- Configurando build de instaladores via CI e publicação automática de versões [\#13](https://github.com/confy-security/app/pull/13) ([henriquesebastiao](https://github.com/henriquesebastiao))
+
+## [0.0.1.dev1](https://github.com/confy-security/app/tree/0.0.1.dev1) (2025-07-26)
+
+[Full Changelog](https://github.com/confy-security/app/compare/f49e0d83fccdb31213d50b5d3a7c7dfad073681e...0.0.1.dev1)
 
 **Closed issues:**
 
