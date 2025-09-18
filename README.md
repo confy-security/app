@@ -15,7 +15,9 @@
 [![Code Quality](https://github.com/confy-security/app/actions/workflows/code-quality.yml/badge.svg)](https://github.com/confy-security/app/actions/workflows/code-quality.yml)
 [![GitHub License](https://img.shields.io/github/license/confy-security/app?color=blue)](/LICENSE)
 [![Visitors](https://api.visitorbadge.io/api/visitors?path=confy-security%2Fapp&label=repository%20visits&countColor=%231182c3&style=flat)](https://github.com/confy-security/app)
-  
+
+<img width="722" height="659" alt="image" src="https://github.com/user-attachments/assets/e890fa76-fc71-481e-803d-a87d262a699c" />
+
 </div>
 
 ## 🔧 Configurando o ambiente de desenvolvimento
