@@ -1,8 +1,21 @@
 # Changelog
 
-## [Unreleased](https://github.com/confy-security/app/tree/HEAD)
+## [1.0.0](https://github.com/confy-security/app/tree/1.0.0) (2025-10-24)
 
-[Full Changelog](https://github.com/confy-security/app/compare/0.0.1.dev1...HEAD)
+[Full Changelog](https://github.com/confy-security/app/compare/0.1.0...1.0.0)
+
+**Closed issues:**
+
+- Implementar assinatura de mensagens no app [\#31](https://github.com/confy-security/app/issues/31)
+
+**Merged pull requests:**
+
+- Adicionando assinaturas no envio de mensagens do APP [\#32](https://github.com/confy-security/app/pull/32) ([L4xP04](https://github.com/L4xP04))
+- build\(deps\): Bump actions/setup-python from 5 to 6 [\#29](https://github.com/confy-security/app/pull/29) ([dependabot[bot]](https://github.com/apps/dependabot))
+
+## [0.1.0](https://github.com/confy-security/app/tree/0.1.0) (2025-09-12)
+
+[Full Changelog](https://github.com/confy-security/app/compare/0.0.1.dev1...0.1.0)
 
 **Closed issues:**
 
