@@ -8,7 +8,8 @@ from confy_addons import (
     RSAPublicEncryption,
     deserialize_public_key,
 )
-# from confy_addons.exceptions import SignatureVerificationError
+
+
 from confy_addons.prefixes import AES_KEY_PREFIX, AES_PREFIX, KEY_EXCHANGE_PREFIX, SYSTEM_PREFIX
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
@@ -19,7 +20,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
+from ui.core.constants import RAW_PAYLOAD_LENGTH
 from confy.utils import get_protocol, is_prefix
 
 
@@ -244,7 +245,7 @@ class WebSocketThread(QThread):
             try:
                 # 1. Separa payload e assinatura
                 parts = raw_payload_with_sig.split('::')
-                if len(parts) != 2:
+                if len(parts) != RAW_PAYLOAD_LENGTH:
                     self.error_occurred.emit('Payload de mensagem malformado recebido.')
                     return
                 b64_payload, b64_signature = parts
@@ -300,21 +301,21 @@ class WebSocketThread(QThread):
         if self.peer_aes_key:
             try:
                 # <--- INÍCIO DA LÓGICA DE ASSINATURA --->
-                
+
                 # 1. Criptografa a mensagem com AES
                 encrypted_payload = AESEncryption(self.peer_aes_key).encrypt(message)
 
                 # 2. Assina a mensagem ORIGINAL (em bytes) com nossa chave privada
                 message_bytes = message.encode('utf-8')
-                signature = self.rsa.sign(message_bytes) # Usa a instância 'rsa'
+                signature = self.rsa.sign(message_bytes)  # Usa a instância 'rsa'
 
                 # 3. Codifica a assinatura em base64
                 b64_signature = base64.b64encode(signature).decode('utf-8')
 
                 # 4. Combina e envia
-                final_payload = f"{AES_PREFIX}{encrypted_payload}::{b64_signature}"
+                final_payload = f'{AES_PREFIX}{encrypted_payload}::{b64_signature}'
                 await self.websocket.send(final_payload)
-                
+
                 # <--- FIM DA LÓGICA DE ASSINATURA --->
             except Exception as e:
                 self.error_occurred.emit(f'Falha ao criptografar/assinar/enviar: {e}')
