@@ -2,16 +2,13 @@ import asyncio
 import base64
 
 import websockets
-from confy_addons.encryption import (
-    aes_decrypt,
-    aes_encrypt,
+from confy_addons import (
+    AESEncryption,
+    RSAEncryption,
+    RSAPublicEncryption,
     deserialize_public_key,
-    generate_aes_key,
-    generate_rsa_keypair,
-    rsa_decrypt,
-    rsa_encrypt,
-    serialize_public_key,
 )
+# from confy_addons.exceptions import SignatureVerificationError
 from confy_addons.prefixes import AES_KEY_PREFIX, AES_PREFIX, KEY_EXCHANGE_PREFIX, SYSTEM_PREFIX
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
@@ -64,8 +61,8 @@ class WebSocketThread(QThread):
         self.websocket = None  # Instância ativa da conexão WebSocket
 
         # === SISTEMA DE CRIPTOGRAFIA END-TO-END ===
-        # Gera par de chaves RSA único para este usuário (2048 bits)
-        self.private_key, self.public_key = generate_rsa_keypair()
+        # <--- MODIFICADO: Instancia a classe RSA que gera e armazena o par de chaves
+        self.rsa = RSAEncryption()
 
         # Chaves relacionadas ao peer (outro usuário no chat)
         self.peer_public_key = None  # Chave pública RSA recebida do destinatário
@@ -173,11 +170,9 @@ class WebSocketThread(QThread):
             if message == f'{SYSTEM_PREFIX} O usuário destinatário agora está conectado.':
                 # Envia chave pública automaticamente (apenas uma vez)
                 if not self.public_sent:
-                    # Serializa chave pública RSA para base64
-                    pub_b64 = serialize_public_key(self.public_key)
-                    await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{pub_b64}')
+                    # <--- MODIFICADO: Usa a propriedade da instância 'rsa'
+                    await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{self.rsa.base64_public_key}')
                     self.public_sent = True
-
             # Repassa mensagem do sistema para a UI
             self.system_message.emit(message)
             return
@@ -196,8 +191,8 @@ class WebSocketThread(QThread):
             # Responde com nossa chave pública se ainda não enviamos
             if not self.public_sent:
                 try:
-                    pub_b64 = serialize_public_key(self.public_key)
-                    await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{pub_b64}')
+                    # <--- MODIFICADO: Usa a propriedade da instância 'rsa'
+                    await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{self.rsa.base64_public_key}')
                     self.public_sent = True
                 except Exception as e:
                     self.error_occurred.emit(f'Falha ao enviar chave pública: {e}')
@@ -209,15 +204,15 @@ class WebSocketThread(QThread):
             if self.peer_aes_key is None and self.public_sent:
                 should_generate = str(self.user_id) > str(self.recipient_id)
                 if should_generate:
-                    # Gera chave AES-256 aleatória
-                    aes_key = generate_aes_key()
-                    # Criptografa com chave pública do peer
-                    encrypted_key = rsa_encrypt(self.peer_public_key, aes_key)
+                    # <--- MODIFICADO: Instancia AESEncryption para gerar a chave
+                    aes = AESEncryption()
+                    # <--- MODIFICADO: Instancia RSAPublicEncryption para criptografar
+                    encrypted_key = RSAPublicEncryption(self.peer_public_key).encrypt(aes.key)
                     # Codifica em base64 para transmissão
                     b64_encrypted_key = base64.b64encode(encrypted_key).decode()
                     await self.websocket.send(f'{AES_KEY_PREFIX}{b64_encrypted_key}')
                     # Armazena a chave gerada para uso local
-                    self.peer_aes_key = aes_key
+                    self.peer_aes_key = aes.key
 
         # === RECEBE CHAVE AES CRIPTOGRAFADA ===
         elif is_prefix(message, AES_KEY_PREFIX):
@@ -226,10 +221,10 @@ class WebSocketThread(QThread):
             try:
                 # Decodifica de base64
                 encrypted_key = base64.b64decode(b64_enc)
-                # Descriptografa usando nossa chave privada RSA
-                aes_key = rsa_decrypt(self.private_key, encrypted_key)
+                # <--- MODIFICADO: Usa o método da instância 'rsa'
+                received_aes_key = self.rsa.decrypt(encrypted_key)
                 # Armazena chave AES para criptografia de mensagens
-                self.peer_aes_key = aes_key
+                self.peer_aes_key = AESEncryption(key=received_aes_key).key
                 self.system_message.emit('Chave AES estabelecida - comunicação segura ativa')
             except Exception as e:
                 self.error_occurred.emit(f'Falha ao descriptografar a chave AES: {e}')
@@ -244,15 +239,36 @@ class WebSocketThread(QThread):
                 )
                 return
 
-            # Extrai payload criptografado
-            b64_payload = message[len(AES_PREFIX) :]
+            # <--- INÍCIO DA LÓGICA DE VERIFICAÇÃO DE ASSINATURA --->
+            raw_payload_with_sig = message[len(AES_PREFIX) :]
             try:
-                # Descriptografa mensagem usando AES-256
-                decrypted = aes_decrypt(self.peer_aes_key, b64_payload)
-                # Envia mensagem descriptografada para a UI
-                self.message_received.emit(self.recipient_id, decrypted)
+                # 1. Separa payload e assinatura
+                parts = raw_payload_with_sig.split('::')
+                if len(parts) != 2:
+                    self.error_occurred.emit('Payload de mensagem malformado recebido.')
+                    return
+                b64_payload, b64_signature = parts
+
+                # 2. Descriptografa a mensagem
+                decrypted_message = AESEncryption(self.peer_aes_key).decrypt(b64_payload)
+
+                # 3. Prepara dados para verificação
+                decrypted_bytes = decrypted_message.encode('utf-8')
+                signature_bytes = base64.b64decode(b64_signature)
+
+                # 4. VERIFICA a assinatura
+                RSAPublicEncryption(self.peer_public_key).verify(decrypted_bytes, signature_bytes)
+
+                # 5. SUCESSO: Emite a mensagem descriptografada e verificada
+                self.message_received.emit(self.recipient_id, decrypted_message)
+
+            except SignatureVerificationError as e:
+                # 6. FALHA NA VERIFICAÇÃO: Emite um erro e descarta a mensagem
+                self.error_occurred.emit(f'ASSINATURA INVÁLIDA: Mensagem descartada. ({e})')
             except Exception as e:
-                self.error_occurred.emit(f'Falha ao descriptografar mensagem: {e}')
+                # 7. FALHA GERAL: Erro de descriptografia, base64, etc.
+                self.error_occurred.emit(f'Falha ao descriptografar/verificar mensagem: {e}')
+            # <--- FIM DA LÓGICA DE VERIFICAÇÃO --->
         else:
             # === MENSAGEM EM TEXTO PURO (FALLBACK) ===
             # Para compatibilidade ou debugging - não recomendado em produção
@@ -272,32 +288,37 @@ class WebSocketThread(QThread):
                 # Espera por mensagem na fila (timeout de 1 segundo)
                 message = await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
                 # Criptografa e envia a mensagem
-                await self.send_encrypted_message(message)
+                await self.send_encrypted_and_signed_message(message)
             except asyncio.TimeoutError:
                 # Timeout normal - continua o loop
                 continue
             except Exception as e:
                 self.error_occurred.emit(f'Erro ao enviar mensagem: {str(e)}')
 
-    async def send_encrypted_message(self, message):
-        """Criptografa e envia uma mensagem via WebSocket.
-
-        Args:
-            message (str): Texto da mensagem a ser enviado
-
-        Note:
-            Só envia se a chave AES estiver estabelecida (handshake completo).
-        """
+    async def send_encrypted_and_signed_message(self, message):
+        """Criptografa E ASSINA uma mensagem antes de enviar via WebSocket."""
         if self.peer_aes_key:
             try:
-                # Criptografa mensagem com AES-256 e codifica em base64
-                encrypted_payload = aes_encrypt(self.peer_aes_key, message)
-                # Envia com prefixo AES para identificação
-                await self.websocket.send(f'{AES_PREFIX}{encrypted_payload}')
+                # <--- INÍCIO DA LÓGICA DE ASSINATURA --->
+                
+                # 1. Criptografa a mensagem com AES
+                encrypted_payload = AESEncryption(self.peer_aes_key).encrypt(message)
+
+                # 2. Assina a mensagem ORIGINAL (em bytes) com nossa chave privada
+                message_bytes = message.encode('utf-8')
+                signature = self.rsa.sign(message_bytes) # Usa a instância 'rsa'
+
+                # 3. Codifica a assinatura em base64
+                b64_signature = base64.b64encode(signature).decode('utf-8')
+
+                # 4. Combina e envia
+                final_payload = f"{AES_PREFIX}{encrypted_payload}::{b64_signature}"
+                await self.websocket.send(final_payload)
+                
+                # <--- FIM DA LÓGICA DE ASSINATURA --->
             except Exception as e:
-                self.error_occurred.emit(f'Falha ao criptografar/enviar mensagem: {e}')
+                self.error_occurred.emit(f'Falha ao criptografar/assinar/enviar: {e}')
         else:
-            # Handshake ainda não foi completado
             self.system_message.emit('Chave AES ainda não estabelecida. Aguarde o handshake.')
 
     def send_message(self, message):
