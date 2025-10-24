@@ -1,4 +1,4 @@
-"""Core CLI constants."""
+"""Core Application constants."""
 
 from typing import Final
 

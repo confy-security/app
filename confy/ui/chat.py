@@ -18,8 +18,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from ui.core.constants import RAW_PAYLOAD_LENGTH
 
+from confy.core.constants import RAW_PAYLOAD_LENGTH
 from confy.utils import get_protocol, is_prefix
 
 
