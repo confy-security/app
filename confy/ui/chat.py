@@ -1,7 +1,7 @@
 import asyncio
 import base64
-
 import websockets
+
 from confy_addons import (
     AESEncryption,
     RSAEncryption,
@@ -263,7 +263,7 @@ class WebSocketThread(QThread):
                 # 5. SUCESSO: Emite a mensagem descriptografada e verificada
                 self.message_received.emit(self.recipient_id, decrypted_message)
 
-            except SignatureVerificationError as e:
+            except Exception as e:
                 # 6. FALHA NA VERIFICAÇÃO: Emite um erro e descarta a mensagem
                 self.error_occurred.emit(f'ASSINATURA INVÁLIDA: Mensagem descartada. ({e})')
             except Exception as e:
