@@ -1,16 +1,7 @@
 import asyncio
 import base64
+
 import websockets
-
-from confy_addons import (
-    AESEncryption,
-    RSAEncryption,
-    RSAPublicEncryption,
-    deserialize_public_key,
-)
-
-
-from confy_addons.prefixes import AES_KEY_PREFIX, AES_PREFIX, KEY_EXCHANGE_PREFIX, SYSTEM_PREFIX
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -20,6 +11,15 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from confy_addons import (
+    AESEncryption,
+    RSAEncryption,
+    RSAPublicEncryption,
+    deserialize_public_key,
+)
+
+from confy_addons.prefixes import AES_KEY_PREFIX, AES_PREFIX, KEY_EXCHANGE_PREFIX, SYSTEM_PREFIX
 from ui.core.constants import RAW_PAYLOAD_LENGTH
 from confy.utils import get_protocol, is_prefix
 

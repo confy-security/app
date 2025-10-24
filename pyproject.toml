@@ -47,9 +47,8 @@ quote-style = 'single'
 [tool.ruff.lint.per-file-ignores]
 'qss.py' = ['W293']
 'connect_to_user.py' = ['W293']
-'chat.py' = ['W293', 'E501', 'PLR0912']
+'chat.py' = ['W293', 'E501', 'PLR0912', 'PLR0915']
 '__init__.py' = ['F401']
-'process_received_message' = ['PLR0915']
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
