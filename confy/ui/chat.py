@@ -8,10 +8,7 @@ from confy_addons import (
     RSAPublicEncryption,
     deserialize_public_key,
 )
-from ui.core.constants import RAW_PAYLOAD_LENGTH
 from confy_addons.prefixes import AES_KEY_PREFIX, AES_PREFIX, KEY_EXCHANGE_PREFIX, SYSTEM_PREFIX
-from confy.utils import get_protocol, is_prefix
-
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -21,6 +18,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from ui.core.constants import RAW_PAYLOAD_LENGTH
+
+from confy.utils import get_protocol, is_prefix
 
 
 class WebSocketThread(QThread):
