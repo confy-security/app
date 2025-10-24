@@ -222,9 +222,8 @@ class WebSocketThread(QThread):
                 # Decodifica de base64
                 encrypted_key = base64.b64decode(b64_enc)
                 # <--- MODIFICADO: Usa o método da instância 'rsa'
-                received_aes_key = self.rsa.decrypt(encrypted_key)
                 # Armazena chave AES para criptografia de mensagens
-                self.peer_aes_key = AESEncryption(key=received_aes_key).key
+                self.peer_aes_key = self.rsa.decrypt(encrypted_key)
                 self.system_message.emit('Chave AES estabelecida - comunicação segura ativa')
             except Exception as e:
                 self.error_occurred.emit(f'Falha ao descriptografar a chave AES: {e}')
@@ -262,9 +261,6 @@ class WebSocketThread(QThread):
                 # 5. SUCESSO: Emite a mensagem descriptografada e verificada
                 self.message_received.emit(self.recipient_id, decrypted_message)
 
-            except Exception as e:
-                # 6. FALHA NA VERIFICAÇÃO: Emite um erro e descarta a mensagem
-                self.error_occurred.emit(f'ASSINATURA INVÁLIDA: Mensagem descartada. ({e})')
             except Exception as e:
                 # 7. FALHA GERAL: Erro de descriptografia, base64, etc.
                 self.error_occurred.emit(f'Falha ao descriptografar/verificar mensagem: {e}')
