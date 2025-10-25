@@ -51,12 +51,11 @@ quote-style = 'single'
 '__init__.py' = ['F401']
 
 [tool.taskipy.tasks]
-lint = 'ruff check .; ruff check . --diff'
-format = 'ruff format .; ruff check . --fix'
-radon = 'radon cc ./confy -a -na'
-bandit = 'bandit -r ./confy'
-run = 'python confy/__main__.py'
-test = 'pytest -s -x --cov=confy -vv; poetry run coverage html'
+lint = 'poetry run ruff check .; poetry run ruff check . --diff'
+format = 'poetry run ruff format .; poetry run ruff check . --fix'
+radon = 'poetry run radon cc ./confy -a -na'
+bandit = 'poetry run bandit -r ./confy'
+run = 'poetry run python -m confy'
 build = 'briefcase build'
 package = 'briefcase package'
 changelog = 'github_changelog_generator -u confy-security -p app -o CHANGELOG --no-verbose'
