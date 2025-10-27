@@ -40,7 +40,7 @@ jobs:
           CHANGELOG_GITHUB_TOKEN: ${{ secrets.CHANGELOG_GITHUB_TOKEN }}
       
       - name: Upload CHANGELOG file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: CHANGELOG
           path: CHANGELOG.md
@@ -132,7 +132,7 @@ jobs:
             ${{ matrix.briefcase-args }}
 
       - name: Upload App
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: confy-${{ matrix.target }}
           path: dist
@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload Log
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Log-Failure-${{ matrix.target }}
           path: logs/*
