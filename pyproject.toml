@@ -13,7 +13,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = "==3.13.7"
 dependencies = [
-    "pyside6-essentials (>=6.9.1,<7.0.0)",
+    "pyside6-essentials (>=6.10.0,<7.0.0)",
     "websockets (>=15.0.1,<16.0.0)",
     "httpx (>=0.28.1,<0.29.0)",
     "confy-addons (>=1.1.0,<2.0.0)",
@@ -24,14 +24,14 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.12.4"
+ruff = "^0.12.12"
 taskipy = "^1.14.1"
 radon = "^6.0.1"
 bandit = "^1.8.6"
-pytest = "^8.4.1"
+pytest = "^8.4.2"
 pytest-qt = "^4.5.0"
-pytest-cov = "^6.2.1"
-briefcase = "^0.3.24"
+pytest-cov = "^6.3.0"
+briefcase = "^0.3.25"
 
 [tool.ruff]
 line-length = 99
@@ -75,14 +75,14 @@ version = "1.0.0"
 author = "Confy Security"
 author_email = "confy@henriquesebastiao.com"
 url = "https://github.com/confy-security/app"
-bundle = "com.henriquesebastiao.confy"
+bundle = "com.henriquesebastiao"
 license.file = "LICENSE"
 
 [tool.briefcase.app.confy]
 sources = ["confy"]
 test_sources = ["tests"]
-description = "Aplicativo Confy Desktop."
-long_description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
+description = "Confy Desktop application."
+long_description = "Desktop application for the Confy encrypted communication system."
 icon = "confy/assets/icon"
 installer_icon = "confy/assets/icon"
 formal_name = "Confy"
