@@ -56,7 +56,11 @@ Install using an AUR helper like `yay`:
 yay -S confy-app
 ```
 
-### From Source
+### ⬇️ Using pre-built installers
+
+Download the latest installer for your operating system from the [Releases](https://github.com/confy-security/app/releases) page.
+
+### Build from Source
 
 Clone the repository and install dependencies using Poetry:
 
