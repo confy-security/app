@@ -1,6 +1,6 @@
 [project]
 name = "confy"
-version = "1.0.3"
+version = "1.0.4"
 description = "Aplicativo desktop para o sistema Confy de comunicação criptografada."
 authors = [
     {name = "Henrique Sebastião", email = "contato@henriquesebastiao.com"},
@@ -71,7 +71,7 @@ omit = ["__main__.py", "utils.py"]
 
 [tool.briefcase]
 project_name = "Confy"
-version = "1.0.3"
+version = "1.0.4"
 author = "Confy Security"
 author_email = "confy@henriquesebastiao.com"
 url = "https://github.com/confy-security/app"
