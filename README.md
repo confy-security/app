@@ -48,6 +48,14 @@ Made with dedication by students from Brazil 🇧🇷.
 
 ## 📦 Installation
 
+### With AUR (Arch Linux)
+
+Install using an AUR helper like `yay`:
+
+```bash
+yay -S confy-app
+```
+
 ### From Source
 
 Clone the repository and install dependencies using Poetry:
@@ -61,7 +69,7 @@ poetry install
 Then run the application:
 
 ```bash
-poetry run confy-desktop
+poetry run python -m confy
 ```
 
 Or use the task runner:
