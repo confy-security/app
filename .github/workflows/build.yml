@@ -105,14 +105,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.13.7"
-      
-      - name: Update apt
-        run: |
-          sudo apt update
 
       - name: Install flatpak
         if: matrix.target == 'Flatpak'
-        run: sudo apt install flatpak flatpak-builder
+        run: |
+          sudo apt update
+          sudo apt install flatpak flatpak-builder
 
       - name: Install Briefcase
         run: |
