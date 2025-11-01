@@ -36,6 +36,9 @@ convert_proper() {
        echo "### apply ${image_source} spec: ${size}x${size}@${scale}"
        convert ${image_source} \
           -resize ${resize}x${resize} \
+          -background none \
+          -gravity center \
+          -extent ${resize}x${resize} \
           -unsharp '1.5x1+0.7+0.02' \
           ${image_folder}/${image_target}-${size}x${size}@${scale}x.png
     done
@@ -66,9 +69,12 @@ convert_android_round() {
        convert -size ${resize}x${resize} xc:none \
           -draw "roundrectangle 0,0,${resize},${resize},${corner},${corner}" \
           ${mask_path}
-       # produce resize
+       # produce resize with proper square enforcement
        convert ${image_source} \
           -resize ${resize}x${resize} \
+          -background none \
+          -gravity center \
+          -extent ${resize}x${resize} \
           -unsharp '1.5x1+0.7+0.02' \
           ${file_path}
        # produce composite
@@ -92,6 +98,9 @@ convert_android_square() {
        echo "### apply/android spec: ${size}x${size}@${scale} file: $file_name"
        convert ${image_source} \
           -resize ${resize}x${resize} \
+          -background none \
+          -gravity center \
+          -extent ${resize}x${resize} \
           -unsharp '1.5x1+0.7+0.02' \
           ${file_path}
     done
@@ -112,6 +121,9 @@ convert_ios() {
        echo "### apply/ios spec: ${size}x${size}@${scale} file: $file_name"
        convert ${image_source} \
           -resize ${resize}x${resize} \
+          -background none \
+          -gravity center \
+          -extent ${resize}x${resize} \
           -unsharp '1.5x1+0.7+0.02' \
           ${file_path}
     done
@@ -133,6 +145,9 @@ convert_macos() {
        echo "### apply/macos spec: ${size}x${size}@${scale} file: $file_name"
        convert ${image_source} \
           -resize ${resize}x${resize} \
+          -background none \
+          -gravity center \
+          -extent ${resize}x${resize} \
           -unsharp '1.5x1+0.7+0.02' \
           ${file_path}
        file_list="${file_list} ${file_path}"
