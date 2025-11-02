@@ -38,7 +38,7 @@ line-length = 99
 
 [tool.ruff.lint]
 preview = true
-select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'D', 'UP', 'PERF']
 
 [tool.ruff.format]
 preview = true
@@ -48,7 +48,10 @@ quote-style = 'single'
 'qss.py' = ['W293']
 'connect_to_user.py' = ['W293']
 'chat.py' = ['W293', 'E501', 'PLR0912', 'PLR0915']
-'__init__.py' = ['F401']
+'__init__.py' = ['F401', 'D104']
+'tests/**' = ['D']
+'utils.py' = ['D105', 'D101']
+'*.py' = ['D401']
 
 [tool.taskipy.tasks]
 lint = 'poetry run ruff check .; poetry run ruff check . --diff'

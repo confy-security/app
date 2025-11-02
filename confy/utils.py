@@ -1,3 +1,5 @@
+"""Utility functions and classes for the Confy application."""
+
 import os
 import sys
 from enum import Enum
@@ -18,26 +20,23 @@ class Colors(Enum):
 
 
 def resource_path(relative_path: str) -> str:
-    """
-    Retorna o caminho absoluto para um recurso,
-    mesmo se empacotado com PyInstaller
-    """
+    """Return the absolute path to a resource, even if packaged with PyInstaller."""
     if hasattr(sys, '_MEIPASS'):
-        # PyInstaller extrai os arquivos para essa pasta temporária
+        # PyInstaller extracts files to this temporary folder
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath('.'), relative_path)
 
 
 def is_prefix(message, prefix: str) -> bool:
-    """Verifica se uma mensagem é uma string que começa com o prefixo fornecido.
+    """Check if a message is a string that starts with the provided prefix.
 
     Args:
-        message (Any): Mensagem a ser verificada.
-        prefix (str): Prefixo esperado.
+        message (Any): Message to be checked.
+        prefix (str): Expected prefix.
 
     Returns:
-        bool: True se a mensagem for uma string e começar com o prefixo,
-              False caso contrário.
+        bool: True if the message is a string and starts with the prefix,
+              False otherwise.
 
     """
     if isinstance(message, str) and message.startswith(prefix):
@@ -45,16 +44,17 @@ def is_prefix(message, prefix: str) -> bool:
     return False
 
 
-def get_protocol(url: str, check_username: bool | None = None) -> tuple[str]:
-    """Determina o protocolo WebSocket apropriado (ws ou wss) com base no esquema da URL.
+def get_protocol(url: str, check_username: bool | None = None) -> tuple[str, str]:
+    """Determine the appropriate WebSocket protocol (ws or wss) based on the URL scheme.
 
     Args:
-        url (str): URL completa, incluindo o protocolo (http:// ou https://).
+        url (str): Full URL, including the protocol (http:// or https://).
+        check_username (bool | None): If True, returns 'http' or 'https' instead of 'ws' or 'wss'.
 
     Returns:
-        tuple[str]: Uma tupla contendo:
-            - O protocolo WebSocket correspondente ('ws' ou 'wss').
-            - O hostname extraído da URL.
+        tuple[str]: A tuple containing:
+            - The corresponding WebSocket protocol ('ws' or 'wss').
+            - The hostname extracted from the URL.
 
     """
     hostname = url.split('://')
@@ -70,6 +70,17 @@ def get_protocol(url: str, check_username: bool | None = None) -> tuple[str]:
 
 
 def icon(svg_string, size=24, color: str | None = None):
+    """Create a QIcon from an SVG string.
+
+    Args:
+        svg_string (str): The SVG content as a string.
+        size (int): The desired size of the icon (width and height).
+        color (str | None): Optional color to apply to the SVG elements.
+
+    Returns:
+        QIcon: The generated icon.
+
+    """
     if color:
         svg_string = svg_string.replace('stroke="currentColor"', f'stroke="{color}"')
         svg_string = svg_string.replace('fill="currentColor"', f'fill="{color}"')
@@ -84,6 +95,14 @@ def icon(svg_string, size=24, color: str | None = None):
 
 
 def warning_message_box(object, title: str, text: str):
+    """Display a warning message box with the given title and text.
+
+    Args:
+        object (QWidget): Parent widget for the message box.
+        title (str): Title of the message box.
+        text (str): Text content of the message box.
+
+    """
     msg = QMessageBox(object)
     msg.setIcon(QMessageBox.Warning)
     msg.setWindowTitle(title)

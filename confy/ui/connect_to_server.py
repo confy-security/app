@@ -1,3 +1,5 @@
+"""Module for the ConnectToUserWindow class."""
+
 import importlib.resources
 from http import HTTPStatus
 from urllib.parse import urljoin
@@ -26,14 +28,22 @@ from confy.utils import get_protocol, warning_message_box
 
 
 class ConnectToServerWindow(QWidget):
-    """Janela para conectar ao servidor.
+    """Window to connect to server.
 
     Args:
-        change_window_callback (callable): Função para alterar a janela atual.
-        new_window_callback (QWidget, optional): Janela a ser exibida após a conexão.
+        change_window_callback (callable): Function to change the current window.
+        new_window_callback (QWidget, optional): Window to be displayed after connection.
+
     """
 
     def __init__(self, change_window_callback, new_window_callback: QWidget = None):
+        """Initialize the ConnectToServerWindow.
+
+        Args:
+            change_window_callback (callable): Function to change the current window.
+            new_window_callback (QWidget, optional): Window to be displayed after connection.
+
+        """
         super().__init__()
 
         self.change_window_callback = change_window_callback
@@ -43,12 +53,12 @@ class ConnectToServerWindow(QWidget):
         layout.setAlignment(Qt.AlignCenter)
         layout.setSpacing(15)
 
-        # Logotipo
+        # Logo
         self.logo = QLabel()
         self.logo.setFixedSize(60, 65)
         self.logo.setAlignment(Qt.AlignCenter)
 
-        # Renderiza o SVG em um QPixmap
+        # Renders SVG into a QPixmap
         with importlib.resources.path('confy.assets', 'shield.svg') as img_path:
             svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
@@ -62,77 +72,78 @@ class ConnectToServerWindow(QWidget):
 
         layout.addWidget(self.logo, alignment=Qt.AlignCenter)
 
-        # Campo Username
+        # Username field
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText(I_PLACEHOLDER_USERNAME)
         self.username_input.setFixedSize(250, 40)
         self.username_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.username_input)
 
-        # Campo de Endereço do Servidor
+        # Server address field
         self.server_address_input = QLineEdit()
         self.server_address_input.setPlaceholderText(I_PLACEHOLDER_SERVER_ADDRESS)
         self.server_address_input.setFixedSize(250, 40)
         self.server_address_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.server_address_input)
 
-        # Botão Conectar
+        # Connect button
         self.connect_button = QPushButton(B_CONNECT)
         self.connect_button.clicked.connect(self.handle_login)
         self.connect_button.setFixedSize(100, 40)
         self.connect_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.connect_button, alignment=Qt.AlignCenter)
 
-        # Conectar ao pressionar Enter no campo de endereço do servidor
+        # Connect by pressing Enter in server address field
         self.server_address_input.returnPressed.connect(self.handle_login)
 
         self.setLayout(layout)
 
     def handle_login(self):
+        """Handle the login process by verifying the username with the server."""
         username = self.username_input.text()
         server_address = self.server_address_input.text()
 
-        # Verifica se os campos de nome e servidor estão preenchidos
-        # Se não estiverem, exibe uma mensagem de aviso
+        # Checks if name and server fields are filled
+        # If not, displays a warning message
         if not username or not server_address:
             warning_message_box(
                 self, W_WARNING_REQUIRED_FIELDS_TITLE, W_WARNING_REQUIRED_FIELDS_TEXT
             )
         else:
-            # === INICIALIZAÇÃO DA VERIFICAÇÃO DE USERNAME ===
-            # Desabilita botão para prevenir múltiplas requisições simultâneas
+            # === INITIALIZATION OF USERNAME VERIFICATION ===
+            # Disables button to prevent multiple simultaneous requests
             self.connect_button.setEnabled(False)
             self.connect_button.setText('Verificando...')
 
-            # === CONSTRUÇÃO DA URL DO ENDPOINT ===
-            # Garante que o servidor tenha protocolo HTTP(S)
+            # === CONSTRUCTION OF ENDPOINT URL ===
+            # Ensures server has HTTP(S) protocol
             protocol, host = get_protocol(server_address, check_username=True)
             base_url = f'{protocol}://{host}'
 
-            # Constrói URL completa para verificação de username
+            # Constructs full URL for username verification
             endpoint = f'/online-users/{username}'
             url = urljoin(base_url, endpoint)
 
-            # === REQUISIÇÃO HTTP COM TIMEOUT ===
-            # Timeout de 10 segundos para evitar travamento indefinido
+            # === HTTP REQUEST WITH TIMEOUT ===
+            # 10 second timeout to prevent indefinite hanging
             try:
                 response = httpx.get(url, timeout=10)
                 if response.status_code == HTTPStatus.OK:
-                    # Status 200: Username está disponível
+                    # Status 200: Username is available
                     main_window = self.parentWidget().parentWidget()
                     main_window.username = username
                     main_window.server_address = server_address
                     if self.new_window_callback:
                         self.change_window_callback(self.new_window_callback)
                 elif response.status_code == HTTPStatus.CONFLICT:
-                    # Status 409 (Conflict): Username já está em uso
+                    # Status 409 (Conflict): Username is already in use
                     warning_message_box(
                         self,
                         'Username Indisponível',
                         'Este nome de usuário já está em uso. Tente outro nome.',
                     )
                 else:
-                    # Outros códigos de status: erro inesperado
+                    # Other status codes: unexpected error
                     warning_message_box(
                         self,
                         'Erro de Conexão',

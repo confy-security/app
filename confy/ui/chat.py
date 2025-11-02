@@ -1,3 +1,5 @@
+"""Graphical chat interface with end-to-end encryption using PySide6."""
+
 import asyncio
 import base64
 
@@ -24,399 +26,410 @@ from confy.utils import get_protocol, is_prefix
 
 
 class WebSocketThread(QThread):
-    """Thread separada para gerenciar a comunicação WebSocket com criptografia end-to-end.
+    """Separate thread to manage WebSocket communication with end-to-end encryption.
 
-    Esta classe implementa um sistema de chat seguro usando:
-    1. Troca de chaves públicas RSA entre usuários
-    2. Geração e compartilhamento seguro de chave AES simétrica
-    3. Criptografia de todas as mensagens usando AES-256
+    This class implements a secure chat system using:
+    1. Exchange of RSA public keys between users
+    2. Generation and secure sharing of symmetric AES key
+    3. Encryption of all messages using AES-256
 
-    O protocolo de handshake funciona da seguinte forma:
-    - Ambos os usuários geram pares RSA e trocam chaves públicas
-    - O usuário com ID "maior" gera uma chave AES e a envia criptografada com RSA
-    - Todas as mensagens subsequentes são criptografadas com AES
+    The handshake protocol works as follows:
+    - Both users generate RSA key pairs and exchange public keys
+    - The user with "larger" ID generates an AES key and sends it encrypted with RSA
+    - All subsequent messages are encrypted with AES
     """
 
-    # === SINAIS QT PARA COMUNICAÇÃO THREAD-SAFE ===
-    message_received = Signal(str, str)  # (sender, message) - Mensagem descriptografada recebida
-    connection_status = Signal(str)  # Status da conexão WebSocket (Conectado/Desconectado)
-    system_message = Signal(str)  # Mensagens do sistema/servidor
-    error_occurred = Signal(str)  # Notificação de erros para exibir na UI
+    # === QT SIGNALS FOR THREAD-SAFE COMMUNICATION ===
+    message_received = Signal(str, str)  # (sender, message) - Decrypted message received
+    connection_status = Signal(str)  # WebSocket connection status (Connected/Disconnected)
+    system_message = Signal(str)  # System/server messages
+    error_occurred = Signal(str)  # Error notification to display in UI
 
     def __init__(self, server_address, user_id, recipient_id):
-        """Inicializa a thread WebSocket com parâmetros de conexão e criptografia.
+        """Initialize the WebSocket thread with connection and encryption parameters.
 
         Args:
-            server_address (str): Endereço do servidor WebSocket (ex: "ws://localhost:8000")
-            user_id (str): ID único do usuário atual
-            recipient_id (str): ID único do destinatário do chat
+            server_address (str): WebSocket server address (ex: "ws://localhost:8000")
+            user_id (str): Unique ID of current user
+            recipient_id (str): Unique ID of chat recipient
+
         """
         super().__init__()
 
-        # === CONFIGURAÇÕES DE CONEXÃO ===
+        # === CONNECTION CONFIGURATION ===
         self.server_address = server_address
         self.user_id = user_id
         self.recipient_id = recipient_id
-        self.running = True  # Flag para controlar o loop principal da thread
-        self.websocket = None  # Instância ativa da conexão WebSocket
+        self.running = True  # Flag to control thread main loop
+        self.websocket = None  # Active WebSocket connection instance
 
-        # === SISTEMA DE CRIPTOGRAFIA END-TO-END ===
-        # <--- MODIFICADO: Instancia a classe RSA que gera e armazena o par de chaves
+        # === END-TO-END ENCRYPTION SYSTEM ===
+        # <--- MODIFIED: Instantiates RSA class that generates and stores key pair
         self.rsa = RSAEncryption()
 
-        # Chaves relacionadas ao peer (outro usuário no chat)
-        self.peer_public_key = None  # Chave pública RSA recebida do destinatário
-        self.peer_aes_key = None  # Chave AES-256 compartilhada para criptografia rápida
+        # Keys related to peer (other user in chat)
+        self.peer_public_key = None  # RSA public key received from recipient
+        self.peer_aes_key = None  # AES-256 shared key for fast encryption
 
-        # Controle do handshake de chaves
-        self.public_sent = False  # Flag para evitar envio duplicado da chave pública
+        # Handshake control
+        self.public_sent = False  # Flag to prevent duplicate public key sending
 
-        # === FILA DE MENSAGENS ASSÍNCRONAS ===
-        # Queue asyncio para processar mensagens de saída de forma thread-safe
+        # === ASYNCHRONOUS MESSAGE QUEUE ===
+        # Asyncio queue to process outgoing messages in thread-safe manner
         self.message_queue = asyncio.Queue()
 
     def run(self):
-        """Ponto de entrada da thread - executa o loop asyncio.
+        """Thread entry point - executes asyncio loop.
 
-        Este método é chamado automaticamente quando start() é invocado.
-        Cria um novo loop de eventos asyncio para esta thread.
+        This method is called automatically when start() is invoked.
+        Creates a new event loop for this thread.
         """
         asyncio.run(self.websocket_client())
 
     async def websocket_client(self):
-        """Cliente WebSocket principal que gerencia a conexão.
+        """Main WebSocket client that manages the connection.
 
-        Estabelece conexão WebSocket, inicia tarefas assíncronas para:
-        - Receber mensagens do servidor
-        - Processar fila de mensagens para envio
+        Establishes WebSocket connection, starts asynchronous tasks for:
+        - Receiving messages from server
+        - Processing message queue for sending
 
         Raises:
-            Exception: Erros de conexão ou comunicação WebSocket
+            Exception: WebSocket connection or communication errors
+
         """
-        # Constrói URI do WebSocket baseado no protocolo detectado
+        # Constructs WebSocket URI based on detected protocol
         protocol, host = get_protocol(self.server_address)
         uri = f'{protocol}://{host}/ws/{self.user_id}@{self.recipient_id}'
 
         try:
-            # Estabelece conexão WebSocket com o servidor
+            # Establishes WebSocket connection with server
             async with websockets.connect(uri) as websocket:
                 self.websocket = websocket
                 self.connection_status.emit('Conectado')
 
-                # === TAREFAS ASSÍNCRONAS CONCORRENTES ===
-                # Task 1: Escutar mensagens do servidor continuamente
+                # === CONCURRENT ASYNCHRONOUS TASKS ===
+                # Task 1: Listen for server messages continuously
                 receive_task = asyncio.create_task(self.receive_messages())
-                # Task 2: Processar fila de mensagens para envio
+                # Task 2: Process message queue for sending
                 send_task = asyncio.create_task(self.process_send_queue())
 
-                # Aguarda até que uma das tarefas termine (conexão perdida ou erro)
+                # Waits until one of the tasks completes (connection lost or error)
                 done, pending = await asyncio.wait(
                     [receive_task, send_task], return_when=asyncio.FIRST_COMPLETED
                 )
 
-                # Cancela tarefas que ainda estão executando
+                # Cancels tasks still running
                 for task in pending:
                     task.cancel()
 
         except Exception as e:
-            # Notifica a UI sobre erro de conexão
-            self.error_occurred.emit(f'Erro de conexão: {str(e)}')
+            # Notifies UI about connection error
+            self.error_occurred.emit(f'Erro de conexÃ£o: {str(e)}')
         finally:
-            # Sempre notifica desconexão ao finalizar
+            # Always notifies disconnection when finishing
             self.connection_status.emit('Desconectado')
 
     async def receive_messages(self):
-        """Loop principal para receber e processar mensagens do WebSocket.
+        """Main loop to receive and process WebSocket messages.
 
-        Escuta continuamente por mensagens do servidor e as processa
-        baseado em seus prefixos (sistema, chave pública, chave AES, mensagem).
+        Continuously listens for server messages and processes them
+        based on their prefixes (system, public key, AES key, message).
 
         Raises:
-            Exception: Erros durante recepção ou processamento de mensagens
+            Exception: Errors during message reception or processing
+
         """
         try:
             while self.running:
                 try:
-                    # Recebe próxima mensagem do WebSocket (bloqueante)
+                    # Receives next WebSocket message (blocking)
                     message = await self.websocket.recv()
                 except websockets.ConnectionClosed:
-                    # Conexão foi fechada pelo servidor ou rede
+                    # Connection was closed by server or network
                     self.running = False
-                    self.connection_status.emit('Conexão fechada')
+                    self.connection_status.emit('ConexÃ£o fechada')
                     break
 
-                # Processa a mensagem baseado em seu tipo/prefixo
+                # Processes message based on its type/prefix
                 await self.process_received_message(message)
 
         except Exception as e:
             self.error_occurred.emit(f'Erro ao receber mensagem: {str(e)}')
 
     async def process_received_message(self, message):
-        """Processa mensagens recebidas baseado em seus prefixos.
+        """Processes received messages based on their prefixes.
 
-        O sistema usa prefixos para identificar tipos de mensagem:
-        - SYSTEM_PREFIX: Mensagens do servidor (não criptografadas)
-        - KEY_EXCHANGE_PREFIX: Chaves públicas RSA
-        - AES_KEY_PREFIX: Chave AES criptografada com RSA
-        - AES_PREFIX: Mensagens de chat criptografadas
+        The system uses prefixes to identify message types:
+        - SYSTEM_PREFIX: Server messages (not encrypted)
+        - KEY_EXCHANGE_PREFIX: RSA public keys
+        - AES_KEY_PREFIX: AES key encrypted with RSA
+        - AES_PREFIX: Encrypted chat messages
 
         Args:
-            message (str): Mensagem bruta recebida do WebSocket
-        """
+            message (str): Raw message received from WebSocket
 
-        # === MENSAGENS DO SERVIDOR (NÃO CRIPTOGRAFADAS) ===
+        """
+        # === SERVER MESSAGES (NOT ENCRYPTED) ===
         if is_prefix(message, SYSTEM_PREFIX):
-            # Verifica se destinatário se conectou para iniciar handshake
-            if message == f'{SYSTEM_PREFIX} O usuário destinatário agora está conectado.':
-                # Envia chave pública automaticamente (apenas uma vez)
+            # Checks if recipient has connected to initiate handshake
+            if message == f'{SYSTEM_PREFIX} O usuÃ¡rio destinatÃ¡rio agora estÃ¡ conectado.':
+                # Sends public key automatically (only once)
                 if not self.public_sent:
-                    # <--- MODIFICADO: Usa a propriedade da instância 'rsa'
+                    # <--- MODIFIED: Uses instance property 'rsa'
                     await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{self.rsa.base64_public_key}')
                     self.public_sent = True
-            # Repassa mensagem do sistema para a UI
+            # Forwards system message to UI
             self.system_message.emit(message)
             return
 
-        # === RECEBE CHAVE PÚBLICA RSA DO PEER ===
+        # === RECEIVES RSA PUBLIC KEY FROM PEER ===
         elif is_prefix(message, KEY_EXCHANGE_PREFIX):
-            # Extrai chave pública da mensagem (remove prefixo)
+            # Extracts public key from message (removes prefix)
             b64_key = message[len(KEY_EXCHANGE_PREFIX) :]
             try:
-                # Deserializa chave pública do base64
+                # Deserializes public key from base64
                 self.peer_public_key = deserialize_public_key(b64_key)
             except Exception as e:
-                self.error_occurred.emit(f'Chave pública do peer inválida: {e}')
+                self.error_occurred.emit(f'Chave pÃºblica do peer invÃ¡lida: {e}')
                 return
 
-            # Responde com nossa chave pública se ainda não enviamos
+            # Responds with our public key if we haven't sent it yet
             if not self.public_sent:
                 try:
-                    # <--- MODIFICADO: Usa a propriedade da instância 'rsa'
+                    # <--- MODIFIED: Uses instance property 'rsa'
                     await self.websocket.send(f'{KEY_EXCHANGE_PREFIX}{self.rsa.base64_public_key}')
                     self.public_sent = True
                 except Exception as e:
-                    self.error_occurred.emit(f'Falha ao enviar chave pública: {e}')
+                    self.error_occurred.emit(f'Falha ao enviar chave pÃºblica: {e}')
                     return
 
-            # === LÓGICA DE GERAÇÃO DA CHAVE AES ===
-            # Apenas um usuário deve gerar a chave AES para evitar conflitos
-            # Critério: usuário com ID "maior" lexicograficamente gera a chave
+            # === AES KEY GENERATION LOGIC ===
+            # Only one user should generate the AES key to avoid conflicts
+            # Criterion: user with "larger" ID lexicographically generates the key
             if self.peer_aes_key is None and self.public_sent:
                 should_generate = str(self.user_id) > str(self.recipient_id)
                 if should_generate:
-                    # <--- MODIFICADO: Instancia AESEncryption para gerar a chave
+                    # <--- MODIFIED: Instantiates AESEncryption to generate the key
                     aes = AESEncryption()
-                    # <--- MODIFICADO: Instancia RSAPublicEncryption para criptografar
+                    # <--- MODIFIED: Instantiates RSAPublicEncryption to encrypt
                     encrypted_key = RSAPublicEncryption(self.peer_public_key).encrypt(aes.key)
-                    # Codifica em base64 para transmissão
+                    # Encodes in base64 for transmission
                     b64_encrypted_key = base64.b64encode(encrypted_key).decode()
                     await self.websocket.send(f'{AES_KEY_PREFIX}{b64_encrypted_key}')
-                    # Armazena a chave gerada para uso local
+                    # Stores generated key for local use
                     self.peer_aes_key = aes.key
 
-        # === RECEBE CHAVE AES CRIPTOGRAFADA ===
+        # === RECEIVES ENCRYPTED AES KEY ===
         elif is_prefix(message, AES_KEY_PREFIX):
-            # Extrai chave AES criptografada da mensagem
+            # Extracts encrypted AES key from message
             b64_enc = message[len(AES_KEY_PREFIX) :]
             try:
-                # Decodifica de base64
+                # Decodes from base64
                 encrypted_key = base64.b64decode(b64_enc)
-                # <--- MODIFICADO: Usa o método da instância 'rsa'
-                # Armazena chave AES para criptografia de mensagens
+                # <--- MODIFIED: Uses method from instance 'rsa'
+                # Stores AES key for message encryption
                 self.peer_aes_key = self.rsa.decrypt(encrypted_key)
-                self.system_message.emit('Chave AES estabelecida - comunicação segura ativa')
+                self.system_message.emit('Chave AES estabelecida - comunicaÃ§Ã£o segura ativa')
             except Exception as e:
                 self.error_occurred.emit(f'Falha ao descriptografar a chave AES: {e}')
             return
 
-        # === MENSAGEM CRIPTOGRAFADA COM AES ===
+        # === MESSAGE ENCRYPTED WITH AES ===
         elif is_prefix(message, AES_PREFIX):
-            # Verifica se handshake foi completado
+            # Checks if handshake was completed
             if self.peer_aes_key is None:
                 self.system_message.emit(
-                    'Mensagem criptografada recebida, mas chave AES não definida'
+                    'Mensagem criptografada recebida, mas chave AES nÃ£o definida'
                 )
                 return
 
-            # <--- INÍCIO DA LÓGICA DE VERIFICAÇÃO DE ASSINATURA --->
+            # <--- START OF SIGNATURE VERIFICATION LOGIC --->
             raw_payload_with_sig = message[len(AES_PREFIX) :]
             try:
-                # 1. Separa payload e assinatura
+                # 1. Separates payload and signature
                 parts = raw_payload_with_sig.split('::')
                 if len(parts) != RAW_PAYLOAD_LENGTH:
                     self.error_occurred.emit('Payload de mensagem malformado recebido.')
                     return
                 b64_payload, b64_signature = parts
 
-                # 2. Descriptografa a mensagem
+                # 2. Decrypts the message
                 decrypted_message = AESEncryption(self.peer_aes_key).decrypt(b64_payload)
 
-                # 3. Prepara dados para verificação
+                # 3. Prepares data for verification
                 decrypted_bytes = decrypted_message.encode('utf-8')
                 signature_bytes = base64.b64decode(b64_signature)
 
-                # 4. VERIFICA a assinatura
+                # 4. VERIFIES the signature
                 RSAPublicEncryption(self.peer_public_key).verify(decrypted_bytes, signature_bytes)
 
-                # 5. SUCESSO: Emite a mensagem descriptografada e verificada
+                # 5. SUCCESS: Emits the decrypted and verified message
                 self.message_received.emit(self.recipient_id, decrypted_message)
 
             except Exception as e:
-                # 7. FALHA GERAL: Erro de descriptografia, base64, etc.
+                # 7. GENERAL FAILURE: Decryption error, base64, etc.
                 self.error_occurred.emit(f'Falha ao descriptografar/verificar mensagem: {e}')
-            # <--- FIM DA LÓGICA DE VERIFICAÇÃO --->
+            # <--- END OF SIGNATURE VERIFICATION LOGIC --->
         else:
-            # === MENSAGEM EM TEXTO PURO (FALLBACK) ===
-            # Para compatibilidade ou debugging - não recomendado em produção
+            # === PLAIN TEXT MESSAGE (FALLBACK) ===
+            # For compatibility or debugging - not recommended in production
             self.message_received.emit(self.recipient_id, message)
 
     async def process_send_queue(self):
-        """Processa continuamente a fila de mensagens para envio.
+        """Continuously processes the message queue for sending.
 
-        Loop infinito que pega mensagens da fila e as envia criptografadas.
-        Usa timeout para permitir verificação periódica da flag self.running.
+        Infinite loop that gets messages from the queue and sends them encrypted.
+        Uses timeout to allow periodic checking of self.running flag.
 
         Raises:
-            Exception: Erros durante envio de mensagens
+            Exception: Errors during message sending
+
         """
         while self.running:
             try:
-                # Espera por mensagem na fila (timeout de 1 segundo)
+                # Waits for message in queue (1 second timeout)
                 message = await asyncio.wait_for(self.message_queue.get(), timeout=1.0)
-                # Criptografa e envia a mensagem
+                # Encrypts and sends the message
                 await self.send_encrypted_and_signed_message(message)
-            except asyncio.TimeoutError:
-                # Timeout normal - continua o loop
+            except TimeoutError:
+                # Normal timeout - continues loop
                 continue
             except Exception as e:
                 self.error_occurred.emit(f'Erro ao enviar mensagem: {str(e)}')
 
     async def send_encrypted_and_signed_message(self, message):
-        """Criptografa E ASSINA uma mensagem antes de enviar via WebSocket."""
+        """Encrypts AND SIGNS a message before sending via WebSocket."""
         if self.peer_aes_key:
             try:
-                # <--- INÍCIO DA LÓGICA DE ASSINATURA --->
+                # <--- START OF SIGNATURE LOGIC --->
 
-                # 1. Criptografa a mensagem com AES
+                # 1. Encrypts the message with AES
                 encrypted_payload = AESEncryption(self.peer_aes_key).encrypt(message)
 
-                # 2. Assina a mensagem ORIGINAL (em bytes) com nossa chave privada
+                # 2. Signs the ORIGINAL message (in bytes) with our private key
                 message_bytes = message.encode('utf-8')
-                signature = self.rsa.sign(message_bytes)  # Usa a instância 'rsa'
+                signature = self.rsa.sign(message_bytes)  # Uses instance 'rsa'
 
-                # 3. Codifica a assinatura em base64
+                # 3. Encodes signature in base64
                 b64_signature = base64.b64encode(signature).decode('utf-8')
 
-                # 4. Combina e envia
+                # 4. Combines and sends
                 final_payload = f'{AES_PREFIX}{encrypted_payload}::{b64_signature}'
                 await self.websocket.send(final_payload)
 
-                # <--- FIM DA LÓGICA DE ASSINATURA --->
+                # <--- END OF SIGNATURE LOGIC --->
             except Exception as e:
                 self.error_occurred.emit(f'Falha ao criptografar/assinar/enviar: {e}')
         else:
-            self.system_message.emit('Chave AES ainda não estabelecida. Aguarde o handshake.')
+            self.system_message.emit('Chave AES ainda nÃ£o estabelecida. Aguarde o handshake.')
 
     def send_message(self, message):
-        """Adiciona mensagem à fila de envio de forma thread-safe.
+        """Adds message to send queue in thread-safe manner.
 
-        Este método é chamado dalla UI thread e precisa ser thread-safe
-        para comunicar com a thread asyncio.
+        This method is called from the UI thread and needs to be thread-safe
+        to communicate with the asyncio thread.
 
         Args:
-            message (str): Mensagem a ser enviada
+            message (str): Message to be sent
 
         Note:
-            Usa estratégias diferentes para compatibilidade entre versões do asyncio.
+            Uses different strategies for compatibility between asyncio versions.
+
         """
         if self.running:
-            # === ESTRATÉGIA 1: Criar novo loop temporário ===
+            # === STRATEGY 1: Create new temporary loop ===
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 loop.run_until_complete(self.message_queue.put(message))
                 loop.close()
             except Exception:
-                # === ESTRATÉGIA 2: Usar loop existente (fallback) ===
+                # === STRATEGY 2: Use existing loop (fallback) ===
                 try:
                     asyncio.run_coroutine_threadsafe(
                         self.message_queue.put(message), asyncio.get_event_loop()
                     )
                 except Exception as e:
-                    # Se todas as estratégias falharem, notifica erro
+                    # If all strategies fail, notifies error
                     self.error_occurred.emit(f'Erro ao enfileirar mensagem: {str(e)}')
 
     def stop(self):
-        """Para a thread WebSocket de forma segura.
+        """Stops the WebSocket thread safely.
 
-        Define flag de parada e aguarda conclusão da thread.
-        Deve ser chamado antes de fechar a aplicação.
+        Sets stop flag and waits for thread completion.
+        Should be called before closing the application.
         """
-        self.running = False  # Sinaliza para loops pararem
-        self.quit()  # Finaliza a thread Qt
-        self.wait()  # Aguarda thread terminar completamente
+        self.running = False  # Signals loops to stop
+        self.quit()  # Finalizes the Qt thread
+        self.wait()  # Waits for thread to complete
 
 
 class ChatWindow(QWidget):
-    """Janela principal do chat com interface gráfica usando PySide6.
+    """Main chat window with graphical interface using PySide6.
 
-    Fornece uma interface de usuário completa para:
-    - Visualizar mensagens de chat em tempo real
-    - Enviar mensagens criptografadas
-    - Monitorar status de conexão e sistema
-    - Exibir erros e notificações
+    Provides a complete user interface for:
+    - Viewing chat messages in real time
+    - Sending encrypted messages
+    - Monitoring connection and system status
+    - Displaying errors and notifications
 
-    A comunicação com o servidor é gerenciada pela WebSocketThread.
+    Server communication is managed by WebSocketThread.
     """
 
     def __init__(self, username=None, recipient=None, server_address=None):
-        """Inicializa a janela de chat com parâmetros opcionais.
+        """Initializes the chat window with optional parameters.
 
         Args:
-            username (str, optional): Nome do usuário atual
-            recipient (str, optional): Nome do destinatário
-            server_address (str, optional): Endereço do servidor WebSocket
+            username (str, optional): Current user's name
+            recipient (str, optional): Recipient's name
+            server_address (str, optional): WebSocket server address
+
         """
         super().__init__()
 
-        # === PARÂMETROS DE CONFIGURAÇÃO ===
+        # === CONFIGURATION PARAMETERS ===
         self.username = username
         self.recipient = recipient
         self.server_address = server_address
 
-        # Define título da janela com nome do destinatário
+        # === UI ELEMENTS ===
+        self.messages_area = None  # Text area for displaying messages
+        self.send_button = None  # Button to send messages
+        self.message_input = None  # Input field for typing messages
+
+        # Sets window title with recipient's name
         self.setWindowTitle(f'Confy - Chat com {self.recipient}')
 
-        # Constrói a interface gráfica
+        # Builds the graphical interface
         self.setup_ui()
 
-        # === GERENCIAMENTO DE CONEXÃO ===
-        self.websocket_thread = None  # Thread de comunicação WebSocket
-        self.connection_status = 'Desconectado'  # Status atual da conexão
+        # === CONNECTION MANAGEMENT ===
+        self.websocket_thread = None  # WebSocket communication thread
+        self.connection_status = 'Desconectado'  # Current connection status
 
-        # Conecta automaticamente se todos os parâmetros foram fornecidos
+        # Connects automatically if all parameters were provided
         if all([username, recipient, server_address]):
             self.connect_to_server()
 
     def setup_ui(self):
-        """Configura todos os elementos da interface do usuário.
+        """Configures all user interface elements.
 
-        Cria layout com:
-        - Área de exibição de mensagens (somente leitura)
-        - Campo de input para novas mensagens
-        - Botão de envio
+        Creates layout with:
+        - Message display area (read-only)
+        - Input field for new messages
+        - Send button
 
-        Aplica estilos CSS customizados para tema escuro.
+        Applies custom CSS styles for dark theme.
         """
-        # === LAYOUT PRINCIPAL VERTICAL ===
+        # === MAIN VERTICAL LAYOUT ===
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
-        layout.setSpacing(10)  # Espaçamento entre elementos
+        layout.setSpacing(10)  # Spacing between elements
 
-        # === ÁREA DE MENSAGENS ===
+        # === MESSAGE AREA ===
         self.messages_area = QTextEdit()
-        self.messages_area.setReadOnly(True)  # Apenas visualização, não editável
-        # Estilo CSS para tema escuro com bordas arredondadas
+        self.messages_area.setReadOnly(True)  # View only, not editable
+        # CSS style for dark theme with rounded borders
         self.messages_area.setStyleSheet(
             """
             QTextEdit {
@@ -430,10 +443,10 @@ class ChatWindow(QWidget):
         )
         layout.addWidget(self.messages_area)
 
-        # === ÁREA DE ENVIO DE MENSAGENS ===
+        # === MESSAGE SENDING AREA ===
         send_layout = QHBoxLayout()
 
-        # Campo de input para digitação
+        # Input field for typing
         self.message_input = QLineEdit(placeholderText='Mensagem')
         self.message_input.setFixedHeight(40)
         self.message_input.setStyleSheet(
@@ -447,10 +460,10 @@ class ChatWindow(QWidget):
             }
             """
         )
-        # Conecta Enter/Return para enviar mensagem
+        # Connects Enter/Return to send message
         self.message_input.returnPressed.connect(self.send_message)
 
-        # Botão de envio
+        # Send button
         self.send_button = QPushButton('Enviar')
         self.send_button.setFixedSize(60, 40)
         self.send_button.setStyleSheet(
@@ -460,137 +473,143 @@ class ChatWindow(QWidget):
                 color: black;
                 border-radius: 10px;
             }
-            
+
             QPushButton:hover {
                 background-color: #C0C0C0;
             }
-            
+
             QPushButton:disabled {
                 background-color: #666666;
                 color: #999999;
             }
             """
         )
-        # Conecta clique do botão para enviar mensagem
+        # Connects button click to send message
         self.send_button.clicked.connect(self.send_message)
 
-        # Adiciona input e botão ao layout horizontal
+        # Adds input and button to horizontal layout
         send_layout.addWidget(self.message_input)
         send_layout.addWidget(self.send_button)
 
-        # Adiciona área de envio ao layout principal
+        # Adds sending area to main layout
         layout.addLayout(send_layout)
         self.setLayout(layout)
 
-        # === CONFIGURAÇÃO INICIAL ===
-        # Desabilita controles até conectar
+        # === INITIAL CONFIGURATION ===
+        # Disables controls until connected
         self.update_connection_status('Desconectado')
 
     def connect_to_server(self):
-        """Estabelece conexão com o servidor WebSocket.
+        """Establishes connection with WebSocket server.
 
-        Cria e inicia WebSocketThread se não houver uma já rodando.
-        Conecta todos os sinais para comunicação thread-safe com a UI.
+        Creates and starts WebSocketThread if one isn't already running.
+        Connects all signals for thread-safe communication with UI.
         """
-        # Evita múltiplas conexões simultâneas
+        # Prevents multiple simultaneous connections
         if self.websocket_thread and self.websocket_thread.isRunning():
             return
 
-        # === CRIAÇÃO DA THREAD DE COMUNICAÇÃO ===
+        # === COMMUNICATION THREAD CREATION ===
         self.websocket_thread = WebSocketThread(self.server_address, self.username, self.recipient)
 
-        # === CONEXÃO DE SINAIS THREAD-SAFE ===
-        # Sinal: Mensagem recebida -> Callback para exibir na UI
+        # === THREAD-SAFE SIGNAL CONNECTIONS ===
+        # Signal: Message received -> Callback to display in UI
         self.websocket_thread.message_received.connect(self.on_message_received)
-        # Sinal: Status de conexão -> Atualizar UI e controles
+        # Signal: Connection status -> Update UI and controls
         self.websocket_thread.connection_status.connect(self.on_connection_status)
-        # Sinal: Mensagem do sistema -> Exibir notificação
+        # Signal: System message -> Display notification
         self.websocket_thread.system_message.connect(self.on_system_message)
-        # Sinal: Erro ocorrido -> Mostrar erro na UI
+        # Signal: Error occurred -> Show error in UI
         self.websocket_thread.error_occurred.connect(self.on_error_occurred)
 
-        # Inicia a thread (chama run() automaticamente)
+        # Starts the thread (calls run() automatically)
         self.websocket_thread.start()
 
     def send_message(self):
-        """Envia mensagem digitada pelo usuário.
+        """Sends message typed by user.
 
-        Realiza validações básicas, exibe a mensagem na UI imediatamente,
-        e a envia via WebSocketThread para criptografia e transmissão.
+        Performs basic validations, displays the message in UI immediately,
+        and sends it via WebSocketThread for encryption and transmission.
 
         Returns:
-            None: Retorna cedo se mensagem vazia ou não conectado
+            None: Returns early if message is empty or not connected
+
         """
-        # Obtém texto e remove espaços em branco
+        # Gets text and removes whitespace
         message = self.message_input.text().strip()
         if not message:
-            return  # Não envia mensagens vazias
+            return  # Doesn't send empty messages
 
-        # Verifica se conexão está ativa
+        # Checks if connection is active
         if not self.websocket_thread or not self.websocket_thread.isRunning():
-            self.show_error('Não conectado ao servidor')
+            self.show_error('NÃ£o conectado ao servidor')
             return
 
-        # === EXIBE MENSAGEM IMEDIATAMENTE NA UI ===
-        # Mostra mensagem como "própria" (cor verde)
-        self.add_message_to_chat('Você', message, is_own=True)
+        # === DISPLAYS MESSAGE IMMEDIATELY IN UI ===
+        # Shows message as "own" (green color)
+        self.add_message_to_chat('VocÃª', message, is_own=True)
 
-        # === ENVIA VIA WEBSOCKET ===
-        # Adiciona à fila de envio da thread (thread-safe)
+        # === SENDS VIA WEBSOCKET ===
+        # Adds to send queue of thread (thread-safe)
         self.websocket_thread.send_message(message)
 
-        # Limpa campo de input para próxima mensagem
+        # Clears input field for next message
         self.message_input.clear()
 
     def on_message_received(self, sender, message):
-        """Callback executado quando mensagem é recebida da thread.
+        """Callback executed when message is received from thread.
 
         Args:
-            sender (str): ID do remetente da mensagem
-            message (str): Conteúdo da mensagem já descriptografado
+            sender (str): ID of message sender
+            message (str): Message content already decrypted
+
         """
-        # Adiciona mensagem recebida na área de chat (cor azul)
+        # Adds received message to chat area (blue color)
         self.add_message_to_chat(sender, message, is_own=False)
 
     def on_connection_status(self, status):
-        """Callback para mudanças no status de conexão WebSocket.
+        """Callback for WebSocket connection status changes.
 
         Args:
-            status (str): Novo status ('Conectado', 'Desconectado', etc.)
+            status (str): New status ('Conectado', 'Desconectado', etc.)
+
         """
         self.update_connection_status(status)
 
     def on_system_message(self, message):
-        """Callback para mensagens do sistema/servidor.
+        """Callback for system/server messages.
 
         Args:
-            message (str): Mensagem do sistema a ser exibida
+            message (str): System message to be displayed
+
         """
         self.add_system_message(message)
 
     def on_error_occurred(self, error):
-        """Callback para notificação de erros da thread.
+        """Callback for error notifications from thread.
 
         Args:
-            error (str): Descrição do erro ocorrido
+            error (str): Description of error that occurred
+
         """
         self.show_error(error)
 
     def add_message_to_chat(self, sender, message, is_own=False):
-        """Adiciona mensagem formatada à área de chat.
+        """Add formatted message to chat area.
 
         Args:
-            sender (str): Nome do remetente
-            message (str): Conteúdo da mensagem
-            is_own (bool): True se é mensagem própria, False se recebida
+            sender (str): Name of sender
+            message (str): Message content
+            is_own (bool): True if own message, False if received
 
         Note:
-            Usa HTML para formatação com cores diferentes:
-            - Verde (#4CAF50): Mensagens próprias
-            - Azul (#2196F3): Mensagens recebidas
+            Uses HTML for formatting with different colors:
+            - Green (#4CAF50): Own messages
+            - Blue (#2196F3): Received messages
+
         """
         if is_own:
-            # Mensagem própria - nome em verde
+            # Own message - name in green
             formatted_message = (
                 f'<div style="color: #4CAF50; font-weight: bold;">'
                 f'{sender}: '
@@ -598,7 +617,7 @@ class ChatWindow(QWidget):
                 f'</div>'
             )
         else:
-            # Mensagem recebida - nome em azul
+            # Received message - name in blue
             formatted_message = (
                 f'<div style="color: #2196F3; font-weight: bold;">'
                 f'{sender}: '
@@ -606,17 +625,18 @@ class ChatWindow(QWidget):
                 f'</div>'
             )
 
-        # Adiciona HTML formatado à área de mensagens
+        # Adds formatted HTML to message area
         self.messages_area.append(formatted_message)
 
     def add_system_message(self, message):
-        """Adiciona mensagem do sistema com formatação especial.
+        """Add system message with special formatting.
 
         Args:
-            message (str): Mensagem do sistema/servidor
+            message (str): System/server message
 
         Note:
-            Mensagens do sistema aparecem em amarelo e itálico.
+            System messages appear in yellow and italic.
+
         """
         formatted_message = (
             f'<div style="color: #FFC107; font-style: italic;">Sistema: {message}</div>'
@@ -624,49 +644,52 @@ class ChatWindow(QWidget):
         self.messages_area.append(formatted_message)
 
     def update_connection_status(self, status):
-        """Atualiza status de conexão e controla habilitação de controles.
+        """Update connection status and controls enabling.
 
         Args:
-            status (str): Novo status da conexão
+            status (str): New connection status
 
         Note:
-            - 'Conectado': Habilita controles de envio
-            - Outros: Desabilita controles e mostra status
+            - 'Conectado': Enables send controls
+            - Others: Disables controls and shows status
+
         """
         self.connection_status = status
 
         if status == 'Conectado':
-            # Habilita controles para envio de mensagens
+            # Enables controls for sending messages
             self.send_button.setEnabled(True)
             self.message_input.setEnabled(True)
             self.add_system_message('Conectado ao servidor')
         else:
-            # Desabilita controles quando desconectado
+            # Disables controls when disconnected
             self.send_button.setEnabled(False)
-            # Só mostra status se não for desconexão normal
+            # Only shows status if not normal disconnection
             if status != 'Desconectado':
                 self.add_system_message(f'Status: {status}')
 
     def show_error(self, error):
-        """Exibe mensagem de erro na área de chat.
+        """Display error message in chat area.
 
         Args:
-            error (str): Descrição do erro a ser exibido
+            error (str): Error description to be displayed
+
         """
         self.add_system_message(f'Erro: {error}')
 
     def closeEvent(self, event):
-        """Cleanup executado quando janela está sendo fechada.
+        """Cleanup executed when window is being closed.
 
-        Garante que a thread WebSocket seja finalizada adequadamente
-        para evitar vazamentos de recursos ou threads órfãs.
+        Ensures that the WebSocket thread is finalized properly
+        to prevent resource leaks or orphaned threads.
 
         Args:
-            event (QCloseEvent): Evento de fechamento da janela
+            event (QCloseEvent): Window close event
+
         """
-        # Para thread WebSocket se estiver rodando
+        # Stops WebSocket thread if running
         if self.websocket_thread and self.websocket_thread.isRunning():
             self.websocket_thread.stop()
 
-        # Aceita o evento de fechamento
+        # Accepts the close event
         event.accept()

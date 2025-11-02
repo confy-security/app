@@ -1,3 +1,5 @@
+"""Module for the ConnectToUserWindow class."""
+
 import importlib.resources
 from http import HTTPStatus
 from urllib.parse import urljoin
@@ -26,9 +28,16 @@ from confy.utils import get_protocol, warning_message_box
 
 
 class ConnectToUserWindow(QWidget):
-    """Janela para conectar a um usuário específico."""
+    """Window to connect to a specific user."""
 
     def __init__(self, change_window_callback, new_window_callback: QWidget = None):
+        """Initialize the ConnectToUserWindow.
+
+        Args:
+            change_window_callback (callable): Function to change the current window.
+            new_window_callback (QWidget, optional): Window to be displayed after connection.
+
+        """
         super().__init__()
 
         self.change_window_callback = change_window_callback
@@ -40,12 +49,12 @@ class ConnectToUserWindow(QWidget):
         layout.setAlignment(Qt.AlignCenter)
         layout.setSpacing(15)
 
-        # Logotipo
+        # Logo
         self.logo = QLabel()
         self.logo.setFixedSize(60, 65)
         self.logo.setAlignment(Qt.AlignCenter)
 
-        # Renderiza o SVG em um QPixmap
+        # Renders SVG into a QPixmap
         with importlib.resources.path('confy.assets', 'shield.svg') as img_path:
             svg_renderer = QSvgRenderer(str(img_path))
         pixmap = QPixmap(60, 65)
@@ -59,30 +68,31 @@ class ConnectToUserWindow(QWidget):
 
         layout.addWidget(self.logo, alignment=Qt.AlignCenter)
 
-        # Campo de Username do Destinatário
+        # Recipient username field
         self.recipient_username_input = QLineEdit()
         self.recipient_username_input.setPlaceholderText(I_PLACEHOLDER_RECIPIENT_ADDRESS)
         self.recipient_username_input.setFixedSize(250, 40)
         self.recipient_username_input.setStyleSheet(INPUT_LABEL_STYLE)
         layout.addWidget(self.recipient_username_input)
 
-        # Botão Conversar
+        # Start chat button
         self.start_chat_button = QPushButton(B_TO_TALK)
         self.start_chat_button.clicked.connect(self.handle_start_chat)
         self.start_chat_button.setFixedSize(100, 40)
         self.start_chat_button.setStyleSheet(BUTTON_STYLE)
         layout.addWidget(self.start_chat_button, alignment=Qt.AlignCenter)
 
-        # Iniciar chat ao pressionar Enter no campo de ID do destinatário
+        # Start chat by pressing Enter in recipient ID field
         self.recipient_username_input.returnPressed.connect(self.handle_start_chat)
 
         self.setLayout(layout)
 
     def handle_start_chat(self):
+        """Handle the start chat button click event."""
         recipient = self.recipient_username_input.text()
 
-        # Verifica se o campo de destinatário está vazio
-        # Se estiver, exibe uma mensagem de aviso
+        # Checks if recipient field is empty
+        # If it is, displays a warning message
         if not recipient:
             warning_message_box(
                 self, W_WARNING_REQUIRED_FIELDS_TITLE, W_WARNING_REQUIRED_FIELDS_TEXT
@@ -95,13 +105,13 @@ class ConnectToUserWindow(QWidget):
                     self, 'Conflito', 'Remetente e destinatário não podem ser o mesmo usuário.'
                 )
             else:
-                # === VERIFICA SE DESTINATÁRIO NÃO ESTÁ CONVERSANDO COM ALGUÉM ===
-                # Desabilitar botão de conversa
+                # === CHECKS IF RECIPIENT IS NOT ALREADY CHATTING WITH SOMEONE ===
+                # Disable chat button
                 self.start_chat_button.setEnabled(False)
                 self.start_chat_button.setText('Verificando...')
 
-                # === CONSTRUÇÃO DA URL DO ENDPOINT ===
-                # Garante que o servidor tenha protocolo HTTP(S)
+                # === CONSTRUCTION OF ENDPOINT URL ===
+                # Ensures server has HTTP(S) protocol
                 protocol, host = get_protocol(main_window.server_address, check_username=True)
                 base_url = f'{protocol}://{host}'
 
@@ -113,17 +123,17 @@ class ConnectToUserWindow(QWidget):
                 if response.status_code == HTTPStatus.OK:
                     main_window.recipient = recipient
                     if self.new_window_callback:
-                        # Se os campos estiverem preenchidos, chama a função de mudança de janela
+                        # If fields are filled, calls the window change function
                         self.change_window_callback(self.new_window_callback)
                 elif response.status_code == HTTPStatus.LOCKED:
-                    # Status 423 (Locked): Destinatário já está em uma conversa ativa
+                    # Status 423 (Locked): Recipient is already in an active conversation
                     warning_message_box(
                         self,
                         'Destinatário Indisponível',
                         'O destinatário já está em uma conversa.',
                     )
                 else:
-                    # Outros códigos de status: erro inesperado
+                    # Other status codes: unexpected error
                     warning_message_box(
                         self,
                         'Erro de Conexão',

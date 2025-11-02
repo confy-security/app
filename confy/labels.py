@@ -1,3 +1,5 @@
+"""Labels and placeholders for the Confy application in Portuguese (Brazil)."""
+
 B_CONNECT = 'Conectar'
 B_TO_TALK = 'Conversar'
 

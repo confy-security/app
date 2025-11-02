@@ -1,3 +1,5 @@
+"""Stylesheet definitions for Confy GUI components."""
+
 from confy.utils import Colors
 
 INPUT_LABEL_STYLE = f"""
