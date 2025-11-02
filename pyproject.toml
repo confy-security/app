@@ -55,9 +55,6 @@ lint = 'poetry run ruff check .; poetry run ruff check . --diff'
 format = 'poetry run ruff format .; poetry run ruff check . --fix'
 radon = 'poetry run radon cc ./confy -a -na'
 bandit = 'poetry run bandit -r ./confy'
-run = 'poetry run python -m confy'
-build = 'briefcase build'
-package = 'briefcase package'
 changelog = 'github_changelog_generator -u confy-security -p app -o CHANGELOG --no-verbose'
 
 [tool.pytest.ini_options]
